@@ -70,8 +70,12 @@
     border-radius: 16px; padding: 26px; text-align: center; margin-bottom: 20px;
     border: 1px solid var(--border); background: linear-gradient(160deg, var(--card) 0%, var(--card2) 100%);
   }
-  .decision .label { font-size: 13px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+  .decision .label { font-size: 12px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
   .decision .value { font-size: 44px; font-weight: 800; margin: 6px 0 2px; }
+  .decision .analyzed { display: inline-block; font-size: 13px; color: var(--text); background: rgba(77,163,255,.12);
+    border: 1px solid rgba(77,163,255,.3); border-radius: 16px; padding: 5px 14px; margin: 6px 0 2px; max-width: 100%; }
+  .decision .analyzed:empty { display: none; }
+  .decision .analyzed b { color: var(--accent); }
   .stars { font-size: 20px; letter-spacing: 3px; margin: 6px 0; }
   .verdict-line { font-size: 17px; font-weight: 700; margin: 10px 0 4px; }
   .verdict-sub { font-size: 14px; color: var(--muted); }
@@ -265,8 +269,9 @@
     </div>
 
     <div class="decision" id="decision">
-      <div class="label">Ederi</div>
+      <div class="label">Ürünün gerçek verilerle hesaplanan değeri</div>
       <div class="value" id="fairValue">—</div>
+      <div class="analyzed" id="analyzedCar"></div>
       <div class="stars" id="stars"></div>
       <div class="verdict-line" id="verdictLine"></div>
       <div class="verdict-sub" id="verdictSub"></div>
@@ -414,6 +419,30 @@ function gapClass(gap) {
 }
 
 // ---- DEĞERLEME MODU ----
+// İlan linkinden okunabilir araç adı çıkar (ör. "...bmw-5-serisi-525d-xdrive..." → "Bmw 5 Serisi 525d Xdrive")
+function carNameFromUrl(url) {
+  try {
+    const skip = /^(ilan|galeriden|sahibinden|satilik|kiralik|otomobil|vasita|arac|detay|com|www|tr)$/;
+    const slugs = new URL(url).pathname.split('/').filter(Boolean)
+      .map(s => s.split('-').filter(w => w && !skip.test(w) && !/^\d{5,}$/.test(w)))
+      .filter(w => w.length >= 2);
+    if (!slugs.length) return '';
+    const best = slugs.reduce((a, b) => b.length > a.length ? b : a);
+    return best.slice(0, 6).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  } catch { return ''; }
+}
+
+function analyzedSummary(car) {
+  const parts = [];
+  const name = carNameFromUrl($('listingUrl').value.trim());
+  if (name) parts.push('<b>' + name + '</b>');
+  if (car.year) parts.push(car.year + ' model');
+  if (car.km) parts.push(car.km.toLocaleString('tr-TR') + ' km');
+  parts.push(car.tramer > 0 ? 'tramer ' + fmt(car.tramer) : 'tramersiz');
+  parts.push((car.painted || car.replaced) ? car.painted + ' boyalı, ' + car.replaced + ' değişen' : 'boyasız/değişensiz');
+  return parts.join(' · ');
+}
+
 function calc() {
   const car = { newPrice: val('newPrice'), year: val('modelYear'), km: val('km'),
                 tramer: val('tramer'), painted: val('painted'), replaced: val('replaced') };
@@ -421,6 +450,7 @@ function calc() {
   const askPrice = val('askPrice');
 
   $('fairValue').textContent = fmt(r.fair);
+  $('analyzedCar').innerHTML = r.fair > 0 ? analyzedSummary(car) : '';
   const box = $('decision');
   box.className = 'decision';
 

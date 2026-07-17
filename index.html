@@ -13,6 +13,8 @@
     --border: #2b3853;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  [id] { scroll-margin-top: 70px; } /* çapa hedefleri yapışkan barın altında kalmasın */
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh;
          padding: 0 16px 16px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
   .wrap { max-width: 1020px; margin: 0 auto; }
@@ -321,7 +323,7 @@
 
     <div class="result-grid">
       <div class="decision" id="decision">
-        <h3 class="res-title">İlan Fiyatı vs. Gerçek Rayiç Değer</h3>
+        <h3 class="res-title">İlan Fiyatı vs. Hesaplanan Rayiç Değer</h3>
         <p class="res-sub">Aynı ürün için istenen fiyatla, verilerden hesaplanan rayiç değeri karşılaştırdık.</p>
         <div class="analyzed" id="analyzedCar"></div>
         <div class="compare">
@@ -333,7 +335,7 @@
           </div>
           <div class="cmp-vs">vs</div>
           <div class="cmp-box fairside">
-            <div class="k">Gerçek Rayiç Değer</div>
+            <div class="k">Hesaplanan Rayiç Değer</div>
             <div class="value" id="fairValue">—</div>
             <div class="s">gerçek verilerle hesaplanan eder</div>
             <div class="cmp-badge conf">🛡 Tahmin güveni %94 <span class="demo-tag">DEMO VERİSİ</span><br>
@@ -354,7 +356,7 @@
         <h2>Değerleme Özeti</h2>
         <div id="waterfall"></div>
         <div class="total-box">
-          <div class="k">Gerçek Rayiç Değer (EDERİ)</div>
+          <div class="k">Hesaplanan Rayiç Değer (EDERİ)</div>
           <div class="v" id="sideTotal">—</div>
         </div>
         <p class="side-note">Bu değer, şeffaf ve kural tabanlı bir motorla hesaplanır — kara kutu yok.
@@ -817,6 +819,10 @@ function switchTab(mode) {
   $('modeBud').classList.toggle('hidden', mode !== 'bud');
   if (mode === 'bud') runBudget();
 }
+
+// Üst bar "Metodoloji" linki: kapalı akordeonu açıp öyle kaydır — boş görünmesin
+document.querySelectorAll('a[href="#metodoloji"]').forEach(a =>
+  a.addEventListener('click', () => { $('metodoloji').open = true; }));
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
  'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']

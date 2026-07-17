@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ederi — Gerçek değeri bilmeden karar verme. | ederi.org</title>
-<meta name="description" content="Ederi: yapay zekâ destekli adil piyasa değeri platformu. Satmadan önce değerine, almadan önce ederine bak. Bağımsız, şeffaf, ücretsiz — değerlemeyi kalem kalem gerekçesiyle gösterir.">
+<meta name="description" content="Ederi: Türkiye'nin ilk bağımsız dijital rayiç platformu. Satmadan önce değerine, almadan önce ederine bak. Bağımsız, şeffaf, ücretsiz — rayiç değeri kalem kalem gerekçesiyle gösterir.">
 <style>
   :root {
     --bg: #0f1420; --card: #1a2233; --card2: #202b42;
@@ -26,6 +26,9 @@
   .tb-logo svg { display: block; width: 100%; height: 100%; }
   .tb-brand { font-weight: 800; font-size: 15px; letter-spacing: .5px; color: var(--text); }
   .tb-brand span { color: var(--accent); }
+  .tb-nav { margin-left: 18px; display: flex; gap: 16px; }
+  .tb-nav a { color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .tb-nav a:hover { color: var(--accent); }
   .tb-tag { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 600; }
 
   /* Tabs */
@@ -73,17 +76,42 @@
   .decision .label { font-size: 12px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
   .decision .value { font-size: 30px; font-weight: 800; }
 
-  /* İstenen vs hesaplanan karşılaştırması */
+  /* Sonuç düzeni: solda karşılaştırma, sağda değerleme özeti */
+  .result-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px; align-items: start; margin-bottom: 20px; }
+  .res-title { font-size: 20px; font-weight: 800; }
+  .res-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 12px; }
+
+  /* İlan fiyatı vs gerçek rayiç değer kartları */
   .compare { display: flex; justify-content: center; align-items: stretch; gap: 10px; margin: 12px 0 6px; }
-  .cmp-box { flex: 1; max-width: 300px; background: rgba(255,255,255,.03); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
+  .cmp-box { flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 12px 14px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .cmp-box.askside { border-color: rgba(255,107,107,.35); background: linear-gradient(165deg, rgba(255,107,107,.09), rgba(255,255,255,.02)); }
+  .cmp-box.fairside { border-color: rgba(62,207,142,.35); background: linear-gradient(165deg, rgba(62,207,142,.09), rgba(255,255,255,.02)); }
   .cmp-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
   .cmp-box .v.ask { font-size: 30px; font-weight: 800; color: var(--text); }
   .cmp-box .s { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
   .cmp-vs { align-self: center; font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
     border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
-  .gap-line { font-size: 14px; font-weight: 700; margin: 8px 0 2px; }
-  .gap-line span { color: var(--muted); font-weight: 600; }
+  .cmp-badge { margin: 10px auto 0; font-size: 12px; font-weight: 700; border-radius: 10px; padding: 7px 12px;
+    display: inline-block; line-height: 1.5; }
+  .cmp-badge.up { background: rgba(255,107,107,.14); color: var(--red); }
+  .cmp-badge.down { background: rgba(77,163,255,.14); color: var(--accent); }
+  .cmp-badge.conf { background: rgba(62,207,142,.1); color: var(--text); font-weight: 600; font-size: 11px; }
+  .cmp-badge.conf .demo-tag { vertical-align: 1px; }
+
+  /* Uzman tavsiyesi */
+  .advice { margin-top: 16px; background: rgba(245,196,81,.07); border: 1px solid rgba(245,196,81,.25);
+    border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.6; text-align: left; color: var(--text); }
+  .advice .t { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--yellow); font-weight: 800; display: block; margin-bottom: 3px; }
+
+  /* Değerleme özeti paneli */
+  .side-summary .wf-item { font-size: 13px; }
+  .total-box { background: rgba(62,207,142,.08); border: 1px solid rgba(62,207,142,.3); border-radius: 12px;
+    padding: 12px; text-align: center; margin-top: 14px; }
+  .total-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
+  .total-box .v { font-size: 26px; font-weight: 800; color: var(--green); margin-top: 2px; }
+  .side-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+  .side-note a { color: var(--accent); text-decoration: none; }
   .decision .analyzed { display: inline-block; font-size: 13px; color: var(--text); background: rgba(77,163,255,.12);
     border: 1px solid rgba(77,163,255,.3); border-radius: 16px; padding: 5px 14px; margin: 6px 0 2px; max-width: 100%; }
   .decision .analyzed:empty { display: none; }
@@ -109,8 +137,9 @@
   .conf-text { text-align: left; font-size: 12px; color: var(--muted); line-height: 1.6; }
   .demo-tag { display: inline-block; background: rgba(245,196,81,.15); color: var(--yellow); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } .deal-row { gap: 20px; } }
+  .grid { max-width: 680px; margin: 0 auto; }
+  @media (max-width: 900px) { .result-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 780px) { .deal-row { gap: 20px; } }
 
   label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
   label:first-of-type { margin-top: 0; }
@@ -206,6 +235,8 @@
   @media (max-width: 600px) {
     body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
     .topbar { margin: 0 -10px; }
+    .tb-nav { display: none; }
+    .res-title { font-size: 17px; }
     .hero { padding: 20px 6px 16px; }
     .hero h1.big { font-size: 26px; }
     .hero .lead { font-size: 13px; }
@@ -236,6 +267,11 @@
   <div class="topbar-in">
     <span class="tb-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35C58F"/><stop offset="0.65" stop-color="#2D7DD2"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2D7DD2"/><stop offset="1" stop-color="#35C58F"/></linearGradient></defs><rect width="120" height="120" rx="26" fill="#FFFFFF"/><line x1="78" y1="80" x2="94" y2="96" stroke="#1B2A5B" stroke-width="11" stroke-linecap="round"/><g fill="url(#bg)"><rect x="42" y="66" width="6" height="14" rx="1.5"/><rect x="50" y="61" width="6" height="19" rx="1.5"/><rect x="58" y="55" width="6" height="25" rx="1.5"/><rect x="66" y="48" width="6" height="32" rx="1.5"/></g><g stroke="#1B2A5B" fill="none" stroke-linecap="round"><path d="M 74 62 A 18 18 0 1 1 74.5 41" stroke-width="9"/><line x1="40" y1="53" x2="77" y2="45" stroke-width="8"/></g><circle cx="57" cy="56" r="36" fill="none" stroke="url(#rg)" stroke-width="9"/></svg></span>
     <span class="tb-brand">ederi<span>.org</span></span>
+    <nav class="tb-nav">
+      <a href="#uygulama">Analiz Et</a>
+      <a href="#metodoloji">Metodoloji</a>
+      <a href="#ilkeler">Hakkımızda</a>
+    </nav>
     <span class="tb-tag">Ederine bak.</span>
   </div>
 </div>
@@ -243,18 +279,18 @@
 <section class="hero">
   <h1 class="big">Gerçek değeri bilmeden <em>karar verme.</em></h1>
   <p class="tagline">Satmadan önce değerine, almadan önce ederine bak.</p>
-  <p class="lead">Yapay zekâ destekli adil piyasa değeri platformu — bağımsız, şeffaf, her zaman ücretsiz.</p>
+  <p class="lead">Türkiye'nin ilk bağımsız dijital rayiç platformu — yapay zekâ destekli, şeffaf, her zaman ücretsiz.
+  Hedefimiz: <b>bir şey almadan önce ilk bakılan yer</b> olmak.</p>
 </section>
 
 <div class="wrap">
 
 
-  <div class="assets">
+  <div class="assets" id="uygulama">
     <div class="asset active" title="Aktif kategori">🚗 Araç</div>
-    <div class="asset soon" title="Yakında">🏠 Ev<span class="soon-tag">YAKINDA</span></div>
-    <div class="asset soon" title="Yakında">🌍 Arsa<span class="soon-tag">YAKINDA</span></div>
-    <div class="asset soon" title="Yakında">🚐 Karavan<span class="soon-tag">YAKINDA</span></div>
-    <div class="asset soon" title="Yakında">🏖️ Yazlık<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">🏠 Konut<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">🌾 Arsa<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">📱 Elektronik<span class="soon-tag">YAKINDA</span></div>
   </div>
 
   <div class="tabs">
@@ -283,37 +319,47 @@
       <p class="link-note">Link çözümleme henüz bağlı değil — örnek ilanla doldurur. Gerçek üründe AI ilandan bilgileri çıkarır, sen onaylarsın.</p>
     </div>
 
-    <div class="decision" id="decision">
-      <div class="label">Analiz sonucu — karşılaştırma</div>
-      <div class="analyzed" id="analyzedCar"></div>
-      <div class="compare">
-        <div class="cmp-box">
-          <div class="k">İstenen fiyat</div>
-          <div class="v ask" id="askShown">—</div>
-          <div class="s">satıcının ilan fiyatı</div>
+    <div class="result-grid">
+      <div class="decision" id="decision">
+        <h3 class="res-title">İlan Fiyatı vs. Gerçek Rayiç Değer</h3>
+        <p class="res-sub">Aynı ürün için istenen fiyatla, verilerden hesaplanan rayiç değeri karşılaştırdık.</p>
+        <div class="analyzed" id="analyzedCar"></div>
+        <div class="compare">
+          <div class="cmp-box askside">
+            <div class="k">İlan Fiyatı</div>
+            <div class="v ask" id="askShown">—</div>
+            <div class="s">satıcının belirlediği fiyat</div>
+            <div class="cmp-badge hidden" id="askBadge"></div>
+          </div>
+          <div class="cmp-vs">vs</div>
+          <div class="cmp-box fairside">
+            <div class="k">Gerçek Rayiç Değer</div>
+            <div class="value" id="fairValue">—</div>
+            <div class="s">gerçek verilerle hesaplanan eder</div>
+            <div class="cmp-badge conf">🛡 Tahmin güveni %94 <span class="demo-tag">DEMO VERİSİ</span><br>
+              <span id="confDetail">1.247 benzer araç · 382 gerçekleşen satış</span></div>
+          </div>
         </div>
-        <div class="cmp-vs" id="cmpVs">vs</div>
-        <div class="cmp-box">
-          <div class="k">Hesaplanan değer</div>
-          <div class="value" id="fairValue">—</div>
-          <div class="s">ürünün gerçek verilerle hesaplanan ederi</div>
+        <div class="stars" id="stars"></div>
+        <div class="verdict-line" id="verdictLine"></div>
+        <div class="verdict-sub" id="verdictSub"></div>
+        <div class="deal-row" id="dealRow">
+          <div class="item"><div class="k">🎯 Önerilen teklif</div><div class="v" id="offer">—</div></div>
+          <div class="item"><div class="k">Beklenen anlaşma aralığı</div><div class="v" id="dealRange">—</div></div>
         </div>
+        <div class="advice hidden" id="advice"></div>
       </div>
-      <div class="gap-line" id="gapLine"></div>
-      <div class="stars" id="stars"></div>
-      <div class="verdict-line" id="verdictLine"></div>
-      <div class="verdict-sub" id="verdictSub"></div>
-      <div class="deal-row" id="dealRow">
-        <div class="item"><div class="k">Önerilen teklif</div><div class="v" id="offer">—</div></div>
-        <div class="item"><div class="k">Beklenen anlaşma aralığı</div><div class="v" id="dealRange">—</div></div>
-      </div>
-      <div class="confidence">
-        <div class="conf-ring" style="--pct:94"><span>94%</span></div>
-        <div class="conf-text">
-          <b style="color:var(--text)">Tahmin güveni</b> <span class="demo-tag">DEMO VERİSİ</span><br>
-          <span id="confDetail">1.247 benzer araç · 382 gerçekleşen satış</span>
+
+      <aside class="card side-summary">
+        <h2>Değerleme Özeti</h2>
+        <div id="waterfall"></div>
+        <div class="total-box">
+          <div class="k">Gerçek Rayiç Değer (EDERİ)</div>
+          <div class="v" id="sideTotal">—</div>
         </div>
-      </div>
+        <p class="side-note">Bu değer, şeffaf ve kural tabanlı bir motorla hesaplanır — kara kutu yok.
+        <a href="#metodoloji">Metodoloji katsayıları →</a></p>
+      </aside>
     </div>
 
     <div class="grid">
@@ -336,7 +382,7 @@
         <label>Piyasa ilan fiyatı (TL)</label>
         <input type="number" inputmode="numeric" id="askPrice" value="950000" step="10000">
 
-        <details>
+        <details id="metodoloji">
           <summary>⚙️ Metodoloji katsayıları (şeffaflık)</summary>
           <div class="coef-grid">
             <div><label>1. yıl amortisman %</label><input type="number" inputmode="numeric" id="depY1" value="15"></div>
@@ -349,11 +395,6 @@
             <div><label>Değişen parça başına düşüm %</label><input type="number" inputmode="decimal" id="replacePen" value="3" step="0.1"></div>
           </div>
         </details>
-      </div>
-
-      <div class="card">
-        <h2>Fiyatın Gerekçesi — Kalem Kalem</h2>
-        <div id="waterfall"></div>
       </div>
     </div>
   </div>
@@ -374,7 +415,7 @@
     <div class="car-list" id="carList"></div>
   </div>
 
-  <div class="principles">
+  <div class="principles" id="ilkeler">
     <div class="principle"><div class="ic">🔍</div><h3>Şeffaf</h3><p>Kara kutu yok. Her değerleme, sıfır fiyatından son kuruşa kadar kalem kalem açıklanır: yaş, kilometre, tramer, kaporta.</p></div>
     <div class="principle"><div class="ic">⚖️</div><h3>Tarafsız</h3><p>İlan sitelerinden ve satıcılardan gelir almayız. Ederi şişirmek için kimseye teşvikimiz yok — varlık sebebimiz bu.</p></div>
     <div class="principle"><div class="ic">🤝</div><h3>Ücretsiz</h3><p>Değer bilgisi kamu malıdır. Alıcının elinde "bak, bunun ederi bu" diyen bir belge olsun diye varız.</p></div>
@@ -390,7 +431,8 @@
   </div>
 
   <footer>
-    Ederi · Prototip v7 — mobil öncelikli arayüz; görüntüden analiz (tarayıcı-içi OCR); tramer ve kilometre etkileri doğrusal değildir (doyumlu eğriler).
+    🔒 Tüm hesaplamalar şeffaf metodolojiyle yapılır. Satıcılardan komisyon veya reklam ücreti alınmaz.<br>
+    Ederi · Prototip v8 — rayiç karşılaştırma arayüzü; görüntüden analiz (tarayıcı-içi OCR); tramer ve kilometre etkileri doğrusal değildir (doyumlu eğriler).
     Katsayılar başlangıç kabulüdür; gerçek üründe gerçekleşen satış verisinden öğrenilir.<br>
     Güven skoru ve bütçe modu ilan listesi temsilidir.
   </footer>
@@ -492,9 +534,12 @@ function calc() {
     const stars = cls==='below'||cls==='fair' ? 5 : cls==='over' ? 3 : cls==='high' ? 2 : 1;
 
     box.classList.add(cls);
-    $('gapLine').innerHTML = diff >= 0
-      ? `<span>Fark:</span> istenen, hesaplanan değerden ${fmt(Math.abs(diff))} yüksek (+%${gap.toFixed(0)})`
-      : `<span>Fark:</span> istenen, hesaplanan değerden ${fmt(Math.abs(diff))} düşük (−%${Math.abs(gap).toFixed(0)})`;
+    const badge = $('askBadge');
+    badge.classList.remove('hidden', 'up', 'down');
+    badge.classList.add(diff >= 0 ? 'up' : 'down');
+    badge.innerHTML = diff >= 0
+      ? `▲ %${gap.toFixed(1)} rayicin üzerinde · ${fmt(Math.abs(diff))} fazla`
+      : `▼ %${Math.abs(gap).toFixed(1)} rayicin altında · ${fmt(Math.abs(diff))} düşük`;
     $('stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
     $('verdictLine').textContent = verdict;
     $('verdictSub').innerHTML = gap >= 0
@@ -507,33 +552,39 @@ function calc() {
       ? `${fmt(r.fair*1.02)} – ${fmt(Math.min(r.fair*1.08, askPrice))}`
       : fmt(askPrice);
     $('dealRow').style.display = '';
+
+    const adv = $('advice');
+    adv.classList.remove('hidden');
+    let advText;
+    if (gap > 25)      advText = `İlan fiyatı rayicin çok üzerinde. Bu makasta pazarlık genelde yetmez — <b>${fmt(offer)}</b> civarı bir teklifle başlayıp gerekirse vazgeçmeye hazır olun; benzer araçların ilanlarını emsal olarak gösterin.`;
+    else if (gap > 10) advText = `İlan fiyatı rayicin üzerinde. <b>${fmt(offer)}</b> civarı bir teklif makul olacaktır; tramer ve ekspertiz kayıtlarını pazarlık kozu olarak kullanın.`;
+    else if (gap >= -5) advText = `Fiyat hesaplanan rayice yakın — adil bir ilan. Küçük bir pazarlık payı deneyin (<b>${fmt(offer)}</b>), ama aracı kaçırmamak öncelikliyse fiyat savunulabilir.`;
+    else               advText = `İstenen fiyat rayicin belirgin altında — fırsat olabilir, ama <b>sebebini mutlaka araştırın</b>: SBM tramer sorgusu, bağımsız ekspertiz ve borç/rehin kontrolü yapmadan karar vermeyin.`;
+    adv.innerHTML = '<span class="t">💡 Uzman tavsiyesi</span>' + advText;
   } else {
-    $('gapLine').textContent = '';
+    $('askBadge').classList.add('hidden');
+    $('advice').classList.add('hidden');
     $('stars').textContent = '';
     $('verdictLine').textContent = 'İlan fiyatı girilmedi';
     $('verdictSub').textContent = 'Karşılaştırma için ilan fiyatını girin.';
     $('dealRow').style.display = 'none';
   }
 
+  const totalAdj = r.fair - car.newPrice;
   const wf = [
     ['Sıfır muadil fiyat', fmt(car.newPrice), ''],
-    [`Yaş amortismanı (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg'],
-    [`Km etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${r.expectedKm.toLocaleString('tr-TR')} · eğrisel)</span>`,
+    [`🕐 Yaş etkisi (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg'],
+    [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${r.expectedKm.toLocaleString('tr-TR')})</span>`,
       (r.kmAdj>=0?'+':'−') + fmt(Math.abs(r.kmAdj)), r.kmAdj>=0?'pos':'neg'],
-    [`Tramer etkisi <span class="wf-note">(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(r.tramerPct).toFixed(1)})</span>`,
+    [`📋 Tramer etkisi <span class="wf-note">(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(r.tramerPct).toFixed(1)})</span>`,
       '−' + fmt(Math.abs(r.tramerDed)), 'neg'],
-    [`Kaporta <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
+    [`🎨 Kaporta / boya <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
       '−' + fmt(Math.abs(r.bodyDed)), 'neg'],
-    ['HESAPLANAN DEĞER (EDERİ)', fmt(r.fair), 'total'],
+    ['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total'],
   ];
-  if (askPrice > 0 && r.fair > 0) {
-    const diff = askPrice - r.fair;
-    wf.push(['İstenen fiyat (ilan)', fmt(askPrice), '']);
-    wf.push([`Fark <span class="wf-note">(istenen − hesaplanan)</span>`,
-      (diff >= 0 ? '+' : '−') + fmt(Math.abs(diff)), diff >= 0 ? 'neg' : 'pos']);
-  }
   $('waterfall').innerHTML = wf.map(([l,v,c]) =>
     `<div class="wf-item"><span>${l}</span><span class="${c}">${v}</span></div>`).join('');
+  $('sideTotal').textContent = fmt(r.fair);
 }
 
 function mockAnalyze() {

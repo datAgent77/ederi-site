@@ -145,8 +145,8 @@
 
   label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
   label:first-of-type { margin-top: 0; }
-  input { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; }
-  input:focus { outline: none; border-color: var(--accent); }
+  input, select { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; font-family: inherit; }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
   .wf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
@@ -369,8 +369,13 @@
         <h2>Araç Bilgileri</h2>
         <label>Marka / Model (isteğe bağlı — sonuç kartında görünür)</label>
         <input type="text" id="carName" placeholder="Örn: Toyota Avensis 1.6 Elegant">
-        <label>Sıfır muadil fiyatı (bugünkü, TL)</label>
-        <input type="number" inputmode="numeric" id="newPrice" value="1500000" step="10000">
+        <label>Sıfır muadil fiyatı (bugünkü, TL) — <b style="color:var(--yellow)">eder bu çapaya dayanır</b></label>
+        <select id="anchorSelect">
+          <option value="">Hazır çapa seç (Temmuz 2026 liste fiyatları) ya da aşağıya elle gir…</option>
+        </select>
+        <input type="number" inputmode="numeric" id="newPrice" value="" step="10000" placeholder="örn. 2.020.500 — bugünkü sıfır muadilinin liste fiyatı" style="margin-top:8px">
+        <p class="link-note" style="margin-top:4px">Kaynak: marka fiyat listeleri (liste/tavsiye fiyat; kampanyalılar daha düşük olabilir).
+        Aracın sıfırı artık satılmıyorsa en yakın segment muadilini seç.</p>
         <div class="row2">
           <div><label>Model yılı</label><input type="number" inputmode="numeric" id="modelYear" value="2021" min="1990" max="2026"></div>
           <div><label>Kilometre</label><input type="number" inputmode="numeric" id="km" value="120000" step="1000"></div>
@@ -492,6 +497,34 @@ function gapClass(gap) {
   return ['vhigh', 'Belirgin Şekilde Yüksek'];
 }
 
+// ---- HAZIR ÇAPALAR (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
+const ANCHORS = [
+  ['Dacia Sandero Essential', 1299000], ['Kia Picanto Feel AMT', 1435000],
+  ['Hyundai i20 Jump Manuel', 1487000], ['Fiat Egea Sedan Dizel Easy Manuel', 1499900],
+  ['Opel Corsa Edition Manuel', 1535000], ['Citroën ë-C3 Plus', 1565000],
+  ['Hyundai Bayon Jump Manuel', 1587000], ['Fiat Egea Sedan Dizel Lounge Manuel', 1674900],
+  ['Renault Clio Evolution X-Tronic', 1750000], ['Hyundai i20 Style DCT', 1816000],
+  ['Renault Clio Evolution Plus EDC', 1830000], ['Dacia Duster Evolution ECO-G', 1865000],
+  ['Peugeot e-208 GT (elektrik)', 1999500], ['Fiat Egea Cross Lounge 1.6 MJT DCT', 2020500],
+  ['Fiat Egea Sedan Lounge 1.6 Dizel Otomatik', 2021900], ['Dacia Duster Techno EDC', 2080000],
+  ['VW Taigo Life Manuel', 2165000], ['Toyota Yaris Hybrid Flame', 2245000],
+  ['VW Golf Impression Manuel', 2258000], ['VW T-Cross Life Manuel', 2275000],
+  ['Toyota Corolla Vision Plus', 2284000], ['Hyundai Tucson Comfort DCT', 2576248],
+  ['Honda HR-V e:HEV Elegance', 2659000], ['Skoda Octavia Sedan Premium', 2734900],
+  ['Toyota Corolla Hybrid Dream', 2808000], ['Nissan Qashqai Skypack', 3134200],
+  ['Nissan Qashqai Skypack 4x4', 3335400], ['Skoda Superb Premium 1.5 TSI', 3774900],
+  ['Audi Q6 e-tron quattro (lüks EV — motor bu segmentte kalibre değil)', 9093459],
+];
+ANCHORS.forEach(([ad, fiyat]) => {
+  const o = document.createElement('option');
+  o.value = fiyat;
+  o.textContent = ad + ' — ' + fiyat.toLocaleString('tr-TR') + ' TL';
+  $('anchorSelect').appendChild(o);
+});
+$('anchorSelect').addEventListener('change', e => {
+  if (e.target.value) { $('newPrice').value = e.target.value; calc(); }
+});
+
 // ---- DEĞERLEME MODU ----
 // İlan linkinden okunabilir araç adı çıkar (ör. "...bmw-5-serisi-525d-xdrive..." → "Bmw 5 Serisi 525d Xdrive")
 function carNameFromUrl(url) {
@@ -520,8 +553,26 @@ function analyzedSummary(car) {
 function calc() {
   const car = { newPrice: val('newPrice'), year: val('modelYear'), km: val('km'),
                 tramer: val('tramer'), painted: val('painted'), replaced: val('replaced') };
-  const r = engine(car, coefs());
   const askPrice = val('askPrice');
+
+  // Çapa yoksa hesap YOK — varsayılan değerle sessiz hesap güveni zedeler
+  if (!car.newPrice) {
+    $('fairValue').textContent = '—';
+    $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
+    $('analyzedCar').innerHTML = '';
+    $('askBadge').classList.add('hidden');
+    $('advice').classList.add('hidden');
+    $('stars').textContent = '';
+    $('decision').className = 'decision';
+    $('verdictLine').textContent = 'Sıfır muadil fiyatı gerekli';
+    $('verdictSub').innerHTML = 'Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır. Aşağıdan hazır çapa seç ya da elle gir — ilanda yazmaz, bu yüzden soruyoruz.';
+    $('dealRow').style.display = 'none';
+    $('waterfall').innerHTML = '';
+    $('sideTotal').textContent = '—';
+    return;
+  }
+
+  const r = engine(car, coefs());
 
   $('fairValue').textContent = fmt(r.fair);
   $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
@@ -724,7 +775,7 @@ function showOcrConfirm(fields, rawText) {
       + (fields[k] !== undefined ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
       + '</label><input type="number" inputmode="numeric" id="ocr_' + k + '" value="' + (fields[k] !== undefined ? fields[k] : '') + '"></div>').join('')
     + '</div>'
-    + '<p class="ocr-lead" style="margin-top:10px">Sıfır muadil fiyatı görüntüde yer almaz; ana formdaki değer korunur — biliyorsan oradan güncelle.</p>'
+    + '<p class="ocr-lead" style="margin-top:10px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
     + '<div style="display:flex;gap:10px;margin-top:12px">'
     + '<button class="btn" onclick="applyOcr()">✅ Onayla ve Değerle</button>'
     + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="$(\'ocrConfirm\').classList.add(\'hidden\')">Vazgeç</button>'

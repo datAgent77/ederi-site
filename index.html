@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ederi — Gerçek değeri bilmeden karar verme. | ederi.org</title>
+<meta name="description" content="Ederi: yapay zekâ destekli adil piyasa değeri platformu. Satmadan önce değerine, almadan önce ederine bak. Bağımsız, şeffaf, ücretsiz — değerlemeyi kalem kalem gerekçesiyle gösterir.">
+<style>
+  :root {
+    --bg: #0f1420; --card: #1a2233; --card2: #202b42;
+    --text: #e8edf5; --muted: #8a97ad; --accent: #4da3ff;
+    --green: #3ecf8e; --yellow: #f5c451; --orange: #ff9f43; --red: #ff6b6b;
+    --border: #2b3853;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 { font-size: 26px; font-weight: 700; }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  /* Tabs */
+  .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; }
+  .tab {
+    padding: 10px 24px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .tab.active { background: var(--accent); color: #08101f; border-color: var(--accent); }
+
+  /* Varlık seçici */
+  .assets { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .asset {
+    padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--card); color: var(--muted); font-size: 13px; font-weight: 600;
+    cursor: pointer; position: relative;
+  }
+  .asset.active { background: rgba(77,163,255,.15); color: var(--accent); border-color: var(--accent); }
+  .asset.soon { cursor: not-allowed; opacity: .55; }
+  .asset.soon .soon-tag {
+    font-size: 9px; font-weight: 800; color: var(--yellow); letter-spacing: .5px;
+    background: rgba(245,196,81,.15); border-radius: 4px; padding: 1px 5px; margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .card h2 { font-size: 14px; margin-bottom: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; }
+
+  .link-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .link-bar input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 14px; }
+  .link-bar button, .btn {
+    padding: 12px 22px; border-radius: 10px; border: none; background: var(--accent);
+    color: #08101f; font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+  .link-bar button:hover, .btn:hover { filter: brightness(1.1); }
+  .link-note { font-size: 11px; color: var(--muted); margin: -12px 0 20px 2px; }
+
+  .decision {
+    border-radius: 16px; padding: 26px; text-align: center; margin-bottom: 20px;
+    border: 1px solid var(--border); background: linear-gradient(160deg, var(--card) 0%, var(--card2) 100%);
+  }
+  .decision .label { font-size: 13px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+  .decision .value { font-size: 44px; font-weight: 800; margin: 6px 0 2px; }
+  .stars { font-size: 20px; letter-spacing: 3px; margin: 6px 0; }
+  .verdict-line { font-size: 17px; font-weight: 700; margin: 10px 0 4px; }
+  .verdict-sub { font-size: 14px; color: var(--muted); }
+  .verdict-sub b { color: var(--text); }
+  .decision.fair { border-color: rgba(62,207,142,.4); } .decision.fair .value { color: var(--green); }
+  .decision.over { border-color: rgba(245,196,81,.4); } .decision.over .value { color: var(--yellow); }
+  .decision.high { border-color: rgba(255,159,67,.4); } .decision.high .value { color: var(--orange); }
+  .decision.vhigh { border-color: rgba(255,107,107,.4); } .decision.vhigh .value { color: var(--red); }
+  .decision.below { border-color: rgba(77,163,255,.4); } .decision.below .value { color: var(--accent); }
+
+  .deal-row { display: flex; justify-content: center; gap: 40px; margin-top: 18px; flex-wrap: wrap; }
+  .deal-row .item .k { font-size: 12px; color: var(--muted); }
+  .deal-row .item .v { font-size: 20px; font-weight: 700; margin-top: 2px; }
+
+  .confidence { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
+  .conf-ring { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 16px;
+    background: conic-gradient(var(--green) calc(var(--pct) * 1%), var(--card2) 0); }
+  .conf-ring span { width: 50px; height: 50px; border-radius: 50%; background: var(--card); display: grid; place-items: center; }
+  .conf-text { text-align: left; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .demo-tag { display: inline-block; background: rgba(245,196,81,.15); color: var(--yellow); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } .deal-row { gap: 20px; } }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  label:first-of-type { margin-top: 0; }
+  input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 15px; }
+  input:focus { outline: none; border-color: var(--accent); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .wf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+  .wf-item:last-child { border-bottom: none; }
+  .wf-item .neg { color: var(--red); } .wf-item .pos { color: var(--green); }
+  .wf-item .total { color: var(--accent); font-weight: 700; font-size: 16px; }
+  .wf-note { font-size: 11px; color: var(--muted); }
+
+  details { margin-top: 18px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; }
+  summary:hover { color: var(--accent); }
+  .coef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .coef-grid label { margin: 0 0 3px; font-size: 12px; }
+  .coef-grid input { padding: 7px 10px; font-size: 13px; }
+
+  /* Görüntüden analiz (OCR) */
+  .ocr-card { margin-bottom: 20px; }
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 22px; text-align: center;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: rgba(77,163,255,.06); }
+  .dropzone .dz-ic { font-size: 30px; margin-bottom: 6px; }
+  .dropzone p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .dropzone p b { color: var(--text); }
+  .dropzone .dz-note { font-size: 11px; margin-top: 8px; }
+  .ocr-status { margin-top: 12px; font-size: 13px; color: var(--accent); }
+  .ocr-confirm { margin-top: 14px; }
+  .ocr-lead { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .ocr-lead b { color: var(--text); }
+  .found { color: var(--green); font-size: 11px; font-weight: 700; }
+  .notfound { color: var(--yellow); font-size: 11px; font-weight: 700; }
+  .ocr-raw { font-size: 11px; color: var(--muted); white-space: pre-wrap; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 8px; max-height: 220px; overflow: auto; }
+
+  /* Bütçe modu */
+  .budget-bar { display: flex; gap: 10px; margin-bottom: 8px; }
+  .budget-bar input { flex: 1; font-size: 16px; padding: 12px 14px; }
+  .budget-note { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .car-list { display: grid; gap: 14px; }
+  .car-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center;
+  }
+  .car-card .name { font-size: 16px; font-weight: 700; }
+  .car-card .meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .car-card .prices { text-align: right; }
+  .car-card .ask { font-size: 15px; font-weight: 700; }
+  .car-card .fair { font-size: 12px; color: var(--muted); }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 14px; font-weight: 700; font-size: 12px; margin-top: 6px; }
+  .badge.fair { background: rgba(62,207,142,.15); color: var(--green); }
+  .badge.below { background: rgba(77,163,255,.15); color: var(--accent); }
+  .badge.over { background: rgba(245,196,81,.15); color: var(--yellow); }
+  .badge.high { background: rgba(255,159,67,.15); color: var(--orange); }
+  .badge.vhigh { background: rgba(255,107,107,.15); color: var(--red); }
+  .rank-tag { font-size: 11px; color: var(--muted); }
+  .best { border-color: rgba(62,207,142,.5); box-shadow: 0 0 0 1px rgba(62,207,142,.25); }
+  .best-label { font-size: 11px; font-weight: 800; color: var(--green); letter-spacing: .5px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 26px; line-height: 1.7; }
+  .hidden { display: none; }
+
+  /* ---- Landing ---- */
+  .hero { text-align: center; padding: 60px 20px 40px; max-width: 860px; margin: 0 auto; }
+  .hero .brand { font-size: 15px; font-weight: 800; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+  .hero h1.big { font-size: 44px; font-weight: 800; margin: 14px 0 6px; line-height: 1.15; }
+  .hero h1.big em { font-style: normal; color: var(--accent); }
+  .hero .tagline { font-size: 18px; font-weight: 700; color: var(--accent); margin-top: 10px; }
+  .hero .lead { color: var(--muted); font-size: 17px; line-height: 1.7; max-width: 640px; margin: 14px auto 26px; }
+  .cta { display: inline-block; background: var(--accent); color: #08101f; font-weight: 800; font-size: 16px;
+         padding: 14px 34px; border-radius: 12px; text-decoration: none; }
+  .cta:hover { filter: brightness(1.1); }
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+  @media (max-width: 760px) { .principles { grid-template-columns: 1fr; } .hero h1.big { font-size: 32px; } }
+  .principle { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .principle .ic { font-size: 26px; }
+  .principle h3 { font-size: 16px; margin: 10px 0 6px; }
+  .principle p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .how { text-align: center; max-width: 760px; margin: 10px auto 50px; padding: 0 20px; }
+  .how h2 { font-size: 20px; margin-bottom: 20px; }
+  .steps { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
+  .step { max-width: 200px; }
+  .step .n { width: 34px; height: 34px; border-radius: 50%; background: rgba(77,163,255,.15); color: var(--accent);
+             font-weight: 800; display: grid; place-items: center; margin: 0 auto 10px; }
+  .step p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .proto-title { text-align: center; padding: 30px 0 6px; }
+  .proto-title h2 { font-size: 22px; }
+  .proto-title p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .site-footer { text-align: center; color: var(--muted); font-size: 12px; padding: 30px 20px 10px; line-height: 1.8; border-top: 1px solid var(--border); margin-top: 40px; }
+  .logo-tile { width: 92px; height: 92px; margin: 0 auto 14px; border-radius: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.35); overflow: hidden; }
+  .logo-tile svg { display: block; width: 100%; height: 100%; }
+</style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2335C58F%22/%3E%3Cstop%20offset%3D%220.65%22%20stop-color%3D%22%232D7DD2%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232D7DD2%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2335C58F%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2226%22%20fill%3D%22%23FFFFFF%22/%3E%3Cline%20x1%3D%2278%22%20y1%3D%2280%22%20x2%3D%2294%22%20y2%3D%2296%22%20stroke%3D%22%231B2A5B%22%20stroke-width%3D%2211%22%20stroke-linecap%3D%22round%22/%3E%3Cg%20fill%3D%22url%28%23bg%29%22%3E%3Crect%20x%3D%2242%22%20y%3D%2266%22%20width%3D%226%22%20height%3D%2214%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2250%22%20y%3D%2261%22%20width%3D%226%22%20height%3D%2219%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2258%22%20y%3D%2255%22%20width%3D%226%22%20height%3D%2225%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2266%22%20y%3D%2248%22%20width%3D%226%22%20height%3D%2232%22%20rx%3D%221.5%22/%3E%3C/g%3E%3Cg%20stroke%3D%22%231B2A5B%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%2074%2062%20A%2018%2018%200%201%201%2074.5%2041%22%20stroke-width%3D%229%22/%3E%3Cline%20x1%3D%2240%22%20y1%3D%2253%22%20x2%3D%2277%22%20y2%3D%2245%22%20stroke-width%3D%228%22/%3E%3C/g%3E%3Ccircle%20cx%3D%2257%22%20cy%3D%2256%22%20r%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22url%28%23rg%29%22%20stroke-width%3D%229%22/%3E%3C/svg%3E">
+</head>
+<body>
+<section class="hero">
+  <div class="logo-tile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35C58F"/><stop offset="0.65" stop-color="#2D7DD2"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2D7DD2"/><stop offset="1" stop-color="#35C58F"/></linearGradient></defs><rect width="120" height="120" rx="26" fill="#FFFFFF"/><line x1="78" y1="80" x2="94" y2="96" stroke="#1B2A5B" stroke-width="11" stroke-linecap="round"/><g fill="url(#bg)"><rect x="42" y="66" width="6" height="14" rx="1.5"/><rect x="50" y="61" width="6" height="19" rx="1.5"/><rect x="58" y="55" width="6" height="25" rx="1.5"/><rect x="66" y="48" width="6" height="32" rx="1.5"/></g><g stroke="#1B2A5B" fill="none" stroke-linecap="round"><path d="M 74 62 A 18 18 0 1 1 74.5 41" stroke-width="9"/><line x1="40" y1="53" x2="77" y2="45" stroke-width="8"/></g><circle cx="57" cy="56" r="36" fill="none" stroke="url(#rg)" stroke-width="9"/></svg></div>
+  <div class="brand">EDERİ.ORG</div>
+  <h1 class="big">Gerçek değeri bilmeden <em>karar verme.</em></h1>
+  <p class="tagline">Satmadan önce değerine, almadan önce ederine bak.</p>
+  <p class="lead">Yapay zekâ destekli adil piyasa değeri platformu. Ederi, bir aracın gerçekte ne ettiğini
+  kalem kalem gerekçesiyle gösterir — bağımsız, şeffaf, kamuya hizmet, her zaman ücretsiz.</p>
+  <a class="cta" href="#uygulama">Prototipi Dene</a>
+</section>
+
+<div class="principles">
+  <div class="principle"><div class="ic">🔍</div><h3>Şeffaf</h3><p>Kara kutu yok. Her değerleme, sıfır fiyatından son kuruşa kadar kalem kalem açıklanır: yaş, kilometre, tramer, kaporta.</p></div>
+  <div class="principle"><div class="ic">⚖️</div><h3>Tarafsız</h3><p>İlan sitelerinden ve satıcılardan gelir almayız. Ederi şişirmek için kimseye teşvikimiz yok — varlık sebebimiz bu.</p></div>
+  <div class="principle"><div class="ic">🤝</div><h3>Ücretsiz</h3><p>Değer bilgisi kamu malıdır. Alıcının elinde "bak, bunun ederi bu" diyen bir belge olsun diye varız.</p></div>
+</div>
+
+<div class="how">
+  <h2>Nasıl çalışır?</h2>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><p>Aracın bilgilerini gir ya da ilanın ekran görüntüsünü yapıştır — OCR tarayıcında okur, sen onaylarsın (yakında: ilan linki de).</p></div>
+    <div class="step"><div class="n">2</div><p>Motor, aracın ederini hesaplar — gerekçesiyle birlikte.</p></div>
+    <div class="step"><div class="n">3</div><p>İlan fiyatıyla arasındaki makası gör, pazarlığa bilerek git.</p></div>
+  </div>
+</div>
+
+<div class="proto-title" id="uygulama">
+  <h2>Prototipi Dene</h2>
+  <p>Beta — katsayılar henüz gerçek satış verisiyle kalibre edilmedi; sonuçlar temsilidir.</p>
+</div>
+
+<div class="wrap">
+
+
+  <div class="assets">
+    <div class="asset active" title="Aktif kategori">🚗 Araç</div>
+    <div class="asset soon" title="Yakında">🏠 Ev<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">🌍 Arsa<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">🚐 Karavan<span class="soon-tag">YAKINDA</span></div>
+    <div class="asset soon" title="Yakında">🏖️ Yazlık<span class="soon-tag">YAKINDA</span></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabVal" onclick="switchTab('val')">🔍 Değerle</div>
+    <div class="tab" id="tabBud" onclick="switchTab('bud')">💰 Bütçeme Ne Uygun?</div>
+  </div>
+
+  <!-- ================= DEĞERLEME MODU ================= -->
+  <div id="modeVal">
+    <div class="link-bar">
+      <input type="text" id="listingUrl" placeholder="İlan linkini yapıştır — araç bilgileri otomatik doldurulur">
+      <button onclick="mockAnalyze()">Analiz Et</button>
+    </div>
+    <p class="link-note">Demo: link çözümleme henüz bağlı değil — örnek bir ilanla doldurur. Gerçek üründe AI ilandan yıl, km, tramer ve hasar bilgisini çıkarır, kullanıcı sadece onaylar.</p>
+
+    <div class="card ocr-card">
+      <h2>📷 Görüntüden Analiz</h2>
+      <div class="dropzone" id="dropzone">
+        <div class="dz-ic">📷</div>
+        <p><b>İlanın ekran görüntüsünü</b> buraya sürükle, panodan yapıştır (Ctrl+V) ya da tıklayıp seç.</p>
+        <p class="dz-note">🔒 Görüntü cihazından çıkmaz — okuma tamamen tarayıcında yapılır (OCR).
+        Link paylaşımına izin vermeyen ilan siteleri için birebir. Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
+      </div>
+      <input type="file" id="ocrFile" accept="image/*" style="display:none">
+      <div class="ocr-status hidden" id="ocrStatus"></div>
+      <div class="ocr-confirm hidden" id="ocrConfirm"></div>
+    </div>
+
+    <div class="decision" id="decision">
+      <div class="label">Ederi</div>
+      <div class="value" id="fairValue">—</div>
+      <div class="stars" id="stars"></div>
+      <div class="verdict-line" id="verdictLine"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+      <div class="deal-row" id="dealRow">
+        <div class="item"><div class="k">Önerilen teklif</div><div class="v" id="offer">—</div></div>
+        <div class="item"><div class="k">Beklenen anlaşma aralığı</div><div class="v" id="dealRange">—</div></div>
+      </div>
+      <div class="confidence">
+        <div class="conf-ring" style="--pct:94"><span>94%</span></div>
+        <div class="conf-text">
+          <b style="color:var(--text)">Tahmin güveni</b> <span class="demo-tag">DEMO VERİSİ</span><br>
+          <span id="confDetail">1.247 benzer araç · 382 gerçekleşen satış</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Araç Bilgileri</h2>
+        <label>Sıfır muadil fiyatı (bugünkü, TL)</label>
+        <input type="number" id="newPrice" value="1500000" step="10000">
+        <div class="row2">
+          <div><label>Model yılı</label><input type="number" id="modelYear" value="2021" min="1990" max="2026"></div>
+          <div><label>Kilometre</label><input type="number" id="km" value="120000" step="1000"></div>
+        </div>
+        <label>Tramer kaydı toplamı (TL)</label>
+        <input type="number" id="tramer" value="30000" step="1000">
+        <div class="row2">
+          <div><label>Boyalı parça sayısı</label><input type="number" id="painted" value="2" min="0" max="15"></div>
+          <div><label>Değişen parça sayısı</label><input type="number" id="replaced" value="0" min="0" max="15"></div>
+        </div>
+        <label>Piyasa ilan fiyatı (TL)</label>
+        <input type="number" id="askPrice" value="950000" step="10000">
+
+        <details>
+          <summary>⚙️ Metodoloji katsayıları (şeffaflık)</summary>
+          <div class="coef-grid">
+            <div><label>1. yıl amortisman %</label><input type="number" id="depY1" value="15"></div>
+            <div><label>2–5. yıl amortisman %/yıl</label><input type="number" id="depY2" value="8.5" step="0.5"></div>
+            <div><label>6–10. yıl amortisman %/yıl</label><input type="number" id="depY6" value="6"></div>
+            <div><label>Normal km / yıl</label><input type="number" id="normKm" value="15000"></div>
+            <div><label>Km eğri şiddeti</label><input type="number" id="kmSev" value="1.0" step="0.1"></div>
+            <div><label>Tramer doyum eşiği (değere oran)</label><input type="number" id="tramerSat" value="0.35" step="0.05"></div>
+            <div><label>Boyalı parça başına düşüm %</label><input type="number" id="paintPen" value="1.5" step="0.1"></div>
+            <div><label>Değişen parça başına düşüm %</label><input type="number" id="replacePen" value="3" step="0.1"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>Fiyatın Gerekçesi — Kalem Kalem</h2>
+        <div id="waterfall"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BÜTÇE MODU ================= -->
+  <div id="modeBud" class="hidden">
+    <div class="card" style="margin-bottom:20px">
+      <h2>Bütçeme göre en uygun nedir?</h2>
+      <div class="budget-bar">
+        <input type="number" id="budget" value="1000000" step="50000" placeholder="Örn: 1.000.000">
+        <button class="btn" onclick="runBudget()">Araç Bul</button>
+      </div>
+      <div class="budget-note">
+        Fiyat filtresi değil, <b style="color:var(--text)">değer avcılığı</b>: bütçendeki ilanlar asıl ederine göre puanlanır,
+        adil ve ucuz fiyatlananlar öne çıkar. <span class="demo-tag">DEMO İLAN VERİSİ</span>
+      </div>
+    </div>
+    <div class="car-list" id="carList"></div>
+  </div>
+
+  <footer>
+    Ederi · Prototip v6 — görüntüden analiz (tarayıcı-içi OCR) eklendi; tramer ve kilometre etkileri doğrusal değildir (doyumlu eğriler).
+    Katsayılar başlangıç kabulüdür; gerçek üründe gerçekleşen satış verisinden öğrenilir.<br>
+    Güven skoru ve bütçe modu ilan listesi temsilidir.
+  </footer>
+</div>
+
+<script>
+const CURRENT_YEAR = 2026;
+const fmt = n => new Intl.NumberFormat('tr-TR', {maximumFractionDigits: 0}).format(Math.round(n)) + ' TL';
+const $ = id => document.getElementById(id);
+const val = id => parseFloat($(id).value) || 0;
+
+// ---- ÇEKİRDEK MOTOR (varlıktan bağımsız mantık: çapa + eğrisel düşümler) ----
+function engine(car, coef) {
+  const age = Math.max(0, CURRENT_YEAR - car.year);
+  let ageFactor = 1;
+  for (let y = 1; y <= age; y++) {
+    if (y === 1) ageFactor *= (1 - coef.depY1/100);
+    else if (y <= 5) ageFactor *= (1 - coef.depY2/100);
+    else if (y <= 10) ageFactor *= (1 - coef.depY6/100);
+    else ageFactor *= 0.97;
+  }
+  const afterAge = car.newPrice * ageFactor;
+
+  const expectedKm = age * coef.normKm;
+  const kmDiff = car.km - expectedKm;
+  let kmAdjPct;
+  if (kmDiff > 0) kmAdjPct = -20 * (1 - Math.exp(-coef.kmSev * (kmDiff/100000) * 1.2));
+  else kmAdjPct = Math.min(3, (-kmDiff/10000) * 0.5);
+  const kmAdj = afterAge * kmAdjPct/100;
+
+  const tRatio = afterAge > 0 ? car.tramer / afterAge : 0;
+  const tramerPct = -30 * (1 - Math.exp(-tRatio / coef.tramerSat));
+  const tramerDed = afterAge * tramerPct/100;
+
+  const bodyPct = -Math.min(25, car.painted*coef.paintPen + car.replaced*coef.replacePen);
+  const bodyDed = afterAge * bodyPct/100;
+
+  const fair = Math.max(0, afterAge + kmAdj + tramerDed + bodyDed);
+  return { fair, afterAge, ageDeduction: car.newPrice - afterAge, kmAdj, expectedKm, tramerDed, tramerPct, bodyDed, age };
+}
+
+function coefs() {
+  return {
+    depY1: val('depY1'), depY2: val('depY2'), depY6: val('depY6'),
+    normKm: val('normKm'), kmSev: val('kmSev'), tramerSat: val('tramerSat'),
+    paintPen: val('paintPen'), replacePen: val('replacePen'),
+  };
+}
+
+function gapClass(gap) {
+  if (gap < -5)  return ['below', 'Değerin Altında'];
+  if (gap <= 10) return ['fair',  'Adil Fiyat'];
+  if (gap <= 25) return ['over',  'Piyasanın Üzerinde'];
+  if (gap <= 40) return ['high',  'Yüksek Fiyat'];
+  return ['vhigh', 'Belirgin Şekilde Yüksek'];
+}
+
+// ---- DEĞERLEME MODU ----
+function calc() {
+  const car = { newPrice: val('newPrice'), year: val('modelYear'), km: val('km'),
+                tramer: val('tramer'), painted: val('painted'), replaced: val('replaced') };
+  const r = engine(car, coefs());
+  const askPrice = val('askPrice');
+
+  $('fairValue').textContent = fmt(r.fair);
+  const box = $('decision');
+  box.className = 'decision';
+
+  if (askPrice > 0 && r.fair > 0) {
+    const gap = (askPrice - r.fair) / r.fair * 100;
+    const diff = askPrice - r.fair;
+    const [cls, verdict] = gapClass(gap);
+    const stars = cls==='below'||cls==='fair' ? 5 : cls==='over' ? 3 : cls==='high' ? 2 : 1;
+
+    box.classList.add(cls);
+    $('stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    $('verdictLine').textContent = verdict;
+    $('verdictSub').innerHTML = gap >= 0
+      ? `Tahmini rayiç değerin <b>%${gap.toFixed(0)}</b> üzerinde — yaklaşık <b>${fmt(Math.abs(diff))}</b> fazla fiyatlandırılmış.`
+      : `Tahmini rayiç değerin <b>%${Math.abs(gap).toFixed(0)}</b> altında — sebebini araştırmakta fayda var.`;
+
+    const offer = Math.min(r.fair * 1.02, askPrice);
+    $('offer').textContent = fmt(offer);
+    $('dealRange').textContent = gap > 2
+      ? `${fmt(r.fair*1.02)} – ${fmt(Math.min(r.fair*1.08, askPrice))}`
+      : fmt(askPrice);
+    $('dealRow').style.display = '';
+  } else {
+    $('stars').textContent = '';
+    $('verdictLine').textContent = 'İlan fiyatı girilmedi';
+    $('verdictSub').textContent = 'Karşılaştırma için ilan fiyatını girin.';
+    $('dealRow').style.display = 'none';
+  }
+
+  const wf = [
+    ['Sıfır muadil fiyat', fmt(car.newPrice), ''],
+    [`Yaş amortismanı (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg'],
+    [`Km etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${r.expectedKm.toLocaleString('tr-TR')} · eğrisel)</span>`,
+      (r.kmAdj>=0?'+':'−') + fmt(Math.abs(r.kmAdj)), r.kmAdj>=0?'pos':'neg'],
+    [`Tramer etkisi <span class="wf-note">(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(r.tramerPct).toFixed(1)})</span>`,
+      '−' + fmt(Math.abs(r.tramerDed)), 'neg'],
+    [`Kaporta <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
+      '−' + fmt(Math.abs(r.bodyDed)), 'neg'],
+    ['EDERİ', fmt(r.fair), 'total'],
+  ];
+  $('waterfall').innerHTML = wf.map(([l,v,c]) =>
+    `<div class="wf-item"><span>${l}</span><span class="${c}">${v}</span></div>`).join('');
+}
+
+function mockAnalyze() {
+  $('newPrice').value = 1750000; $('modelYear').value = 2020; $('km').value = 145000;
+  $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
+  $('askPrice').value = 1250000;
+  calc();
+  $('confDetail').textContent = 'İlan çözümlendi (demo) · 1.247 benzer araç · 382 gerçekleşen satış';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ---- GÖRÜNTÜDEN ANALİZ (tarayıcı-içi OCR + kullanıcı onay ekranı) ----
+// Şeffaflık sözleşmesi gereği OCR sonucu asla doğrudan hesaba girmez:
+// önce onay ekranında gösterilir, kullanıcı düzeltir/onaylar, sonra motor çalışır.
+let tessReady = null;
+function loadTesseract() {
+  if (!tessReady) tessReady = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = resolve;
+    s.onerror = () => { tessReady = null; reject(new Error('OCR kütüphanesi yüklenemedi — internet bağlantını kontrol et.')); };
+    document.head.appendChild(s);
+  });
+  return tessReady;
+}
+
+const trNum = s => parseInt(String(s).replace(/,\d{1,2}$/, '').replace(/[.\s]/g, ''), 10);
+
+function ocrExtract(text) {
+  const flat = text.replace(/\r/g, '').replace(/\n/g, ' ');
+  const out = {};
+  const NUM = '([\\d.,]{2,})';
+  const grab = (labels, pattern) => {
+    for (const l of labels) {
+      const m = flat.match(new RegExp(l + '[\\s:]*' + pattern, 'i'));
+      if (m) return m[1];
+    }
+    return null;
+  };
+  // Not: OCR Türkçe karakterleri sık bozar (ı→i, ğ→g, ş→s) — desenler iki biçimi de kabul eder.
+  // Model yılı: etiketli öncelikli, yoksa metindeki makul ilk yıl
+  let year = grab(['model y[ıi]l[ıi]', 'y[ıi]l', 'model'], '((?:19[89]|20[0-2])\\d)');
+  if (!year) { const m = flat.match(/\b(20[0-2]\d|19[89]\d)\b/); year = m && m[1]; }
+  if (year) out.year = parseInt(year, 10);
+  // Kilometre: önce "115.900 km" kalıbı (ilanlarda yaygın), sonra "Kilometre: 115.900" etiketi
+  let km = null;
+  const kmBefore = flat.match(new RegExp(NUM + '\\s*km\\b', 'i'));
+  if (kmBefore) km = kmBefore[1];
+  else km = grab(['kilometre', 'km'], NUM);
+  if (km != null) { const v = trNum(km); if (!isNaN(v) && v !== out.year) out.km = v; }
+  // İlan fiyatı: etiketli öncelikli, yoksa en büyük TL/₺ tutarı
+  let ask = grab(['sat[ıi][şs] fiyat[ıi]', 'ilan fiyat[ıi]', 'fiyat'], NUM + '\\s*(?:TL|₺)');
+  if (ask != null) ask = trNum(ask);
+  else {
+    const amounts = [...flat.matchAll(new RegExp(NUM + '\\s*(?:TL|₺)', 'gi'))]
+      .map(m => trNum(m[1])).filter(n => n > 50000);
+    if (amounts.length) ask = Math.max(...amounts);
+  }
+  if (ask) out.ask = ask;
+  // Tramer: "tramersiz / hasar kaydı yok" → 0, yoksa etiketli tutar
+  if (/tramersiz|hasar\s*(?:kayd[ıi])?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
+  else {
+    const tr = grab(['tramer\\s*(?:kayd[ıi]|tutar[ıi]|toplam[ıi])?', 'hasar\\s*(?:kayd[ıi]|tutar[ıi]|bedeli)'], NUM);
+    if (tr != null) { const v = trNum(tr); if (!isNaN(v) && v !== out.year) out.tramer = v; }
+  }
+  // Kaporta: boyasız/değişensiz → 0, yoksa "3 boyalı" / "boyalı: 3" kalıpları
+  if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
+  else {
+    const b = flat.match(/(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?boyal[ıi]/i) || flat.match(/boyal[ıi](?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b/i);
+    if (b) out.painted = parseInt(b[1], 10);
+  }
+  if (/de[ğg]i[şs]ensiz/i.test(flat)) out.replaced = 0;
+  else {
+    const d = flat.match(/(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i) || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b/i);
+    if (d) out.replaced = parseInt(d[1], 10);
+  }
+  return out;
+}
+
+async function handleImage(source) {
+  const status = $('ocrStatus');
+  status.classList.remove('hidden');
+  $('ocrConfirm').classList.add('hidden');
+  status.textContent = 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
+  try {
+    await loadTesseract();
+    const { data } = await Tesseract.recognize(source, 'tur', {
+      logger: m => { if (m.status === 'recognizing text') status.textContent = 'Görüntü okunuyor… %' + Math.round(m.progress * 100); }
+    });
+    status.classList.add('hidden');
+    showOcrConfirm(ocrExtract(data.text), data.text);
+  } catch (e) {
+    status.textContent = '⚠️ ' + e.message;
+  }
+}
+
+const OCR_FIELDS = [
+  ['year', 'Model yılı'], ['km', 'Kilometre'], ['tramer', 'Tramer (TL)'],
+  ['painted', 'Boyalı parça'], ['replaced', 'Değişen parça'], ['ask', 'İlan fiyatı (TL)'],
+];
+
+function showOcrConfirm(fields, rawText) {
+  const c = $('ocrConfirm');
+  c.classList.remove('hidden');
+  c.innerHTML = '<p class="ocr-lead">Görüntüden okunanlar — <b>lütfen kontrol et, eksiği/yanlışı düzelt:</b></p>'
+    + '<div class="coef-grid">'
+    + OCR_FIELDS.map(([k, label]) =>
+      '<div><label>' + label + ' '
+      + (fields[k] !== undefined ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+      + '</label><input type="number" id="ocr_' + k + '" value="' + (fields[k] !== undefined ? fields[k] : '') + '"></div>').join('')
+    + '</div>'
+    + '<p class="ocr-lead" style="margin-top:10px">Sıfır muadil fiyatı görüntüde yer almaz; ana formdaki değer korunur — biliyorsan oradan güncelle.</p>'
+    + '<div style="display:flex;gap:10px;margin-top:12px">'
+    + '<button class="btn" onclick="applyOcr()">✅ Onayla ve Değerle</button>'
+    + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="$(\'ocrConfirm\').classList.add(\'hidden\')">Vazgeç</button>'
+    + '</div>'
+    + '<details><summary>Ham OCR metni (şeffaflık)</summary><pre class="ocr-raw">' + rawText.replace(/</g, '&lt;') + '</pre></details>';
+}
+
+function applyOcr() {
+  const map = { year: 'modelYear', km: 'km', tramer: 'tramer', painted: 'painted', replaced: 'replaced', ask: 'askPrice' };
+  for (const k in map) {
+    const v = $('ocr_' + k).value;
+    if (v !== '') $(map[k]).value = v;
+  }
+  calc();
+  $('ocrConfirm').classList.add('hidden');
+  $('confDetail').textContent = 'Görüntüden okundu, kullanıcı onayladı · OCR tarayıcıda çalıştı';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const dz = $('dropzone');
+dz.addEventListener('click', () => $('ocrFile').click());
+$('ocrFile').addEventListener('change', e => { if (e.target.files[0]) handleImage(e.target.files[0]); e.target.value = ''; });
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) handleImage(f);
+});
+document.addEventListener('paste', e => {
+  if ($('modeVal').classList.contains('hidden')) return;
+  const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+  if (item) { e.preventDefault(); handleImage(item.getAsFile()); }
+});
+
+// ---- BÜTÇE MODU (demo ilan seti) ----
+const DEMO_CARS = [
+  { name: 'Renault Clio 1.0 TCe Touch',    year: 2022, km: 61000,  tramer: 0,      painted: 0, replaced: 0, newPrice: 1150000, ask: 830000 },
+  { name: 'Fiat Egea 1.4 Fire Urban',      year: 2021, km: 98000,  tramer: 12000,  painted: 1, replaced: 0, newPrice: 1050000, ask: 720000 },
+  { name: 'Hyundai i20 1.4 MPI Style',     year: 2020, km: 84000,  tramer: 25000,  painted: 2, replaced: 0, newPrice: 1200000, ask: 850000 },
+  { name: 'VW Polo 1.0 TSI Comfortline',   year: 2019, km: 132000, tramer: 45000,  painted: 3, replaced: 1, newPrice: 1350000, ask: 890000 },
+  { name: 'Toyota Corolla 1.6 Vision',     year: 2018, km: 155000, tramer: 30000,  painted: 2, replaced: 0, newPrice: 1550000, ask: 980000 },
+  { name: 'Honda Civic 1.6 Elegance',      year: 2017, km: 178000, tramer: 90000,  painted: 4, replaced: 2, newPrice: 1700000, ask: 995000 },
+  { name: 'Opel Corsa 1.4 Enjoy',          year: 2021, km: 55000,  tramer: 0,      painted: 0, replaced: 0, newPrice: 1000000, ask: 760000 },
+  { name: 'Peugeot 208 1.2 PureTech',      year: 2022, km: 47000,  tramer: 18000,  painted: 1, replaced: 0, newPrice: 1250000, ask: 990000 },
+  { name: 'Dacia Duster 1.3 TCe Comfort',  year: 2021, km: 89000,  tramer: 0,      painted: 1, replaced: 0, newPrice: 1300000, ask: 940000 },
+  { name: 'Ford Focus 1.5 TDCi Titanium',  year: 2019, km: 143000, tramer: 120000, painted: 5, replaced: 2, newPrice: 1500000, ask: 870000 },
+];
+
+function runBudget() {
+  const budget = val('budget');
+  const c = coefs();
+  const scored = DEMO_CARS
+    .filter(car => car.ask <= budget)
+    .map(car => {
+      const r = engine(car, c);
+      const gap = (car.ask - r.fair) / r.fair * 100;
+      return { ...car, fair: r.fair, gap };
+    })
+    .sort((a, b) => a.gap - b.gap);
+
+  if (!scored.length) {
+    $('carList').innerHTML = `<div class="card" style="text-align:center;color:var(--muted)">Bu bütçeye uygun demo ilan bulunamadı. Bütçeyi artırmayı dene.</div>`;
+    return;
+  }
+
+  $('carList').innerHTML = scored.map((car, i) => {
+    const [cls, label] = gapClass(car.gap);
+    const best = i === 0 && (cls === 'below' || cls === 'fair');
+    return `
+    <div class="car-card ${best ? 'best' : ''}">
+      <div>
+        ${best ? '<div class="best-label">⭐ EN İYİ DEĞER</div>' : ''}
+        <div class="name">${car.name}</div>
+        <div class="meta">${car.year} · ${car.km.toLocaleString('tr-TR')} km · Tramer: ${car.tramer ? fmt(car.tramer) : 'Yok'} · ${car.painted} boyalı, ${car.replaced} değişen</div>
+        <span class="badge ${cls}">${label} (${car.gap >= 0 ? '+' : ''}%${car.gap.toFixed(0)})</span>
+      </div>
+      <div class="prices">
+        <div class="ask">${fmt(car.ask)}</div>
+        <div class="fair">Ederi: ${fmt(car.fair)}</div>
+        <div class="rank-tag">#${i + 1} değer sırası</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchTab(mode) {
+  $('tabVal').classList.toggle('active', mode === 'val');
+  $('tabBud').classList.toggle('active', mode === 'bud');
+  $('modeVal').classList.toggle('hidden', mode !== 'val');
+  $('modeBud').classList.toggle('hidden', mode !== 'bud');
+  if (mode === 'bud') runBudget();
+}
+
+['newPrice','modelYear','km','tramer','painted','replaced','askPrice',
+ 'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']
+  .forEach(id => $(id).addEventListener('input', calc));
+calc();
+</script>
+
+<div class="site-footer">
+  <b style="color:var(--text)">ederi.org</b> — yapay zekâ destekli adil piyasa değeri platformu. Bağımsız, şeffaf, kamuya hizmet.<br>
+  Beta sürüm: değerlemeler başlangıç katsayılarıyla hesaplanır; alım-satım tavsiyesi değildir.<br>
+  İletişim: merhaba@ederi.org
+</div>
+</body>
+</html>

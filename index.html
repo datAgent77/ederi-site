@@ -501,37 +501,93 @@ function gapClass(gap) {
 // ---- ÇAPA VERİTABANI (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
 // model: isimden otomatik eşleştirme deseni; trim: donanım ayrıştırma; muadil: sıfırı satılmayan model
 const ANCHOR_DB = [
-  { ad: 'Dacia Sandero Essential', fiyat: 1299000, model: /sandero/i, trim: /essential/i },
-  { ad: 'Kia Picanto Feel AMT', fiyat: 1435000, model: /picanto/i },
+  { ad: 'Dacia Sandero Essential TCe 100', fiyat: 1295000, model: /sandero(?!\s*stepway)/i, trim: /essential/i },
+  { ad: 'Dacia Sandero Expression TCe 100', fiyat: 1426000, model: /sandero(?!\s*stepway)/i, trim: /expression/i },
+  { ad: 'Kia Picanto Cool 1.0 AMT', fiyat: 1435000, model: /picanto/i },
   { ad: 'Hyundai i20 Jump Manuel', fiyat: 1487000, model: /\bi20\b/i, trim: /jump/i },
-  { ad: 'Fiat Egea Sedan Dizel Easy Manuel', fiyat: 1499900, model: /egea(?!\s*cross)/i, trim: /easy/i },
+  { ad: 'Fiat Egea Sedan Dizel Easy Manuel', fiyat: 1499900, model: /egea(?!\s*-?cross)/i, trim: /easy/i },
   { ad: 'Opel Corsa Edition Manuel', fiyat: 1535000, model: /corsa/i, trim: /edition/i },
-  { ad: 'Citroën ë-C3 Plus', fiyat: 1565000, model: /\bë?-?c3\b/i },
+  { ad: 'Hyundai INSTER (elektrik)', fiyat: 1550000, model: /inster/i },
+  { ad: 'Citroën ë-C3', fiyat: 1565000, model: /c3(?!\s*-?aircross)/i },
   { ad: 'Hyundai Bayon Jump Manuel', fiyat: 1587000, model: /bayon/i },
-  { ad: 'Fiat Egea Sedan Dizel Lounge Manuel', fiyat: 1674900, model: /egea(?!\s*cross)/i, trim: /lounge(?![\s\S]*(otomatik|dct))/i },
-  { ad: 'Renault Clio Evolution X-Tronic', fiyat: 1750000, model: /clio/i, trim: /x-?tronic/i },
+  { ad: 'Dacia Jogger Extreme TCe 110 (7 koltuk)', fiyat: 1595000, model: /jogger/i },
+  { ad: 'Fiat Egea Sedan Dizel Lounge Manuel', fiyat: 1674900, model: /egea(?!\s*-?cross)/i, trim: /lounge(?![\s\S]*(otomatik|dct))/i },
+  { ad: 'Dacia Sandero Stepway Expression ECO-G Oto', fiyat: 1681000, model: /stepway/i },
+  { ad: 'Dacia Logan Expression ECO-G Oto', fiyat: 1699000, model: /logan/i },
+  { ad: 'Renault Taliant (muadil: Dacia Logan)', fiyat: 1699000, model: /taliant/i, muadil: true },
+  { ad: 'Renault Clio Evolution TCe 90', fiyat: 1750000, model: /clio/i, trim: /evolution(?!\s*plus)/i },
+  { ad: 'Dacia Logan Journey ECO-G Oto', fiyat: 1774000, model: /logan/i, trim: /journey/i },
+  { ad: 'Renault Yeni Clio Evolution Plus TCe 115', fiyat: 1805000, model: /clio/i, trim: /plus|edc/i },
   { ad: 'Hyundai i20 Style DCT', fiyat: 1816000, model: /\bi20\b/i, trim: /style|dct/i },
   { ad: 'VW Polo (muadil: B segment üst donanım ort.)', fiyat: 1823000, model: /\bpolo\b/i, muadil: true },
-  { ad: 'Renault Clio Evolution Plus EDC', fiyat: 1830000, model: /clio/i, trim: /plus|edc/i },
+  { ad: 'Renault Megane Sedan Touch TCe 140', fiyat: 1841000, model: /megane/i, trim: /touch/i },
   { ad: 'Dacia Duster Evolution ECO-G', fiyat: 1865000, model: /duster/i, trim: /evolution|eco/i },
-  { ad: 'Honda City (muadil sepeti: Egea Lounge AT + i20 Style + Clio EDC ort.)', fiyat: 1889300, model: /\bcity\b/i, muadil: true },
+  { ad: 'Fiat Egea Cross Street', fiyat: 1880500, model: /egea\s*-?cross/i, trim: /street/i },
+  { ad: 'Honda City (muadil sepeti: Egea Lounge AT + i20 Style + Clio ort.)', fiyat: 1889300, model: /\bcity\b/i, muadil: true },
+  { ad: 'Hyundai i30', fiyat: 1944000, model: /\bi30\b/i },
+  { ad: 'Kia XCeed Cool DCT', fiyat: 1960000, model: /xceed/i },
+  { ad: 'Opel Mokka', fiyat: 1988000, model: /mokka/i },
   { ad: 'Peugeot e-208 GT (elektrik)', fiyat: 1999500, model: /\be?-?208\b/i },
-  { ad: 'Fiat Egea Cross Lounge 1.6 MJT DCT', fiyat: 2020500, model: /egea\s*-?cross/i },
-  { ad: 'Fiat Egea Sedan Lounge 1.6 Dizel Otomatik', fiyat: 2021900, model: /egea(?!\s*cross)/i, trim: /lounge[\s\S]*(otomatik|dct)|(otomatik|dct)[\s\S]*lounge/i },
+  { ad: 'Dacia Duster Evolution Turbo TCe 145', fiyat: 2010000, model: /duster/i, trim: /turbo|tce|145/i },
+  { ad: 'Fiat Egea Cross Lounge 1.6 MJT DCT', fiyat: 2020500, model: /egea\s*-?cross/i, trim: /lounge/i },
+  { ad: 'Fiat Egea Sedan Lounge 1.6 Dizel Otomatik', fiyat: 2021900, model: /egea(?!\s*-?cross)/i, trim: /lounge[\s\S]*(otomatik|dct)|(otomatik|dct)[\s\S]*lounge/i },
+  { ad: 'Citroën C4 / C4 X Hybrid 145', fiyat: 2060000, model: /\bc4\b/i },
+  { ad: 'Kia Ceed Elegance DCT', fiyat: 2070000, model: /(?<!x)ceed/i },
   { ad: 'Dacia Duster Techno EDC', fiyat: 2080000, model: /duster/i, trim: /techno|edc/i },
+  { ad: 'Opel Corsa Electric', fiyat: 2101000, model: /corsa/i, trim: /elektrik|electric|corsa-?e\b/i },
+  { ad: 'Kia Stonic Cool DCT', fiyat: 2130000, model: /stonic/i },
+  { ad: 'Citroën C3 Aircross Hybrid', fiyat: 2155000, model: /c3\s*-?aircross/i },
   { ad: 'VW Taigo Life Manuel', fiyat: 2165000, model: /taigo/i },
-  { ad: 'Toyota Yaris Hybrid Flame', fiyat: 2245000, model: /yaris/i },
+  { ad: 'Peugeot e-2008 (elektrik)', fiyat: 2201500, model: /\b2008\b/i, trim: /e[\s-]?2008|elektrik|electric/i },
+  { ad: 'Opel Frontera', fiyat: 2221000, model: /frontera/i },
+  { ad: 'Nissan Juke Tekna Plus DCT', fiyat: 2229400, model: /juke/i },
+  { ad: 'Ford Puma Titanium Hibrit', fiyat: 2238900, model: /puma/i },
+  { ad: 'Toyota Yaris Hybrid Flame', fiyat: 2245000, model: /yaris(?!\s*cross)/i },
+  { ad: 'Kia Sportage Live DCT', fiyat: 2249000, model: /sportage/i },
   { ad: 'VW Golf Impression Manuel', fiyat: 2258000, model: /golf/i },
+  { ad: 'Renault Megane E-Tech EV60 Techno (elektrik)', fiyat: 2273000, model: /megane/i, trim: /e-?tech|elektrik|electric/i },
   { ad: 'VW T-Cross Life Manuel', fiyat: 2275000, model: /t[\s-]?cross/i },
-  { ad: 'Toyota Corolla Vision Plus', fiyat: 2284000, model: /corolla/i, trim: /vision/i },
-  { ad: 'Hyundai Tucson Comfort DCT', fiyat: 2576248, model: /tucson/i },
+  { ad: 'Toyota Corolla Vision Plus Multidrive S', fiyat: 2284000, model: /corolla(?!\s*cross)/i, trim: /vision/i },
+  { ad: 'Kia Niro EV Elegance', fiyat: 2299000, model: /niro/i },
+  { ad: 'Renault Captur Techno Mild Hybrid 140', fiyat: 2325000, model: /captur/i },
+  { ad: 'Hyundai KONA', fiyat: 2340000, model: /kona/i },
+  { ad: 'Renault Megane Sedan Icon TCe EDC', fiyat: 2349000, model: /megane/i, trim: /icon/i },
+  { ad: 'Hyundai Tucson (giriş)', fiyat: 2351000, model: /tucson/i },
+  { ad: 'Peugeot 2008 Hybrid', fiyat: 2353000, model: /\b2008\b/i, trim: /hybrid|hibrit/i },
+  { ad: 'Hyundai KONA Electric', fiyat: 2375000, model: /kona/i, trim: /elektrik|electric/i },
+  { ad: 'Honda Jazz Crosstar Hibrit', fiyat: 2380000, model: /jazz/i },
+  { ad: 'Citroën e-C5 Aircross (elektrik)', fiyat: 2430000, model: /c5\s*-?aircross/i, trim: /elektrik|electric|e-?c5/i },
+  { ad: 'Hyundai IONIQ 6', fiyat: 2484000, model: /ioniq\s*6/i },
+  { ad: 'Toyota C-HR Hybrid Flame', fiyat: 2566000, model: /c-?hr/i },
+  { ad: 'Renault Duster Techno Full Hybrid', fiyat: 2570000, model: /duster/i, trim: /hybrid|hibrit/i },
+  { ad: 'Hyundai Tucson Comfort DCT', fiyat: 2576248, model: /tucson/i, trim: /comfort/i },
+  { ad: 'Peugeot 408 Allure Hybrid', fiyat: 2580000, model: /\b408\b/i },
+  { ad: 'Opel Astra', fiyat: 2590000, model: /astra/i },
+  { ad: 'Ford Focus (muadil: Opel Astra)', fiyat: 2590000, model: /focus/i, muadil: true },
+  { ad: 'Honda Civic (muadil: Corolla Dream)', fiyat: 2609000, model: /civic/i, muadil: true },
+  { ad: 'Citroën C5 Aircross Hybrid 145', fiyat: 2650000, model: /c5\s*-?aircross/i, trim: /hybrid|hibrit/i },
   { ad: 'Honda HR-V e:HEV Elegance', fiyat: 2659000, model: /hr-?v/i },
+  { ad: 'Renault Austral Techno Mild Hybrid 160', fiyat: 2699000, model: /austral/i },
+  { ad: 'Toyota Yaris Cross Hybrid Dream', fiyat: 2704000, model: /yaris\s*cross/i },
+  { ad: 'Nissan Qashqai Designpack', fiyat: 2720400, model: /qashqai/i, trim: /designpack/i },
   { ad: 'Skoda Octavia Sedan Premium', fiyat: 2734900, model: /octavia/i },
   { ad: 'Toyota Avensis (muadil: Octavia Premium)', fiyat: 2734900, model: /avensis/i, muadil: true },
-  { ad: 'Toyota Corolla Hybrid Dream', fiyat: 2808000, model: /corolla/i, trim: /hybrid|hibrit/i },
+  { ad: 'VW T-Roc Life DSG', fiyat: 2755000, model: /t-?roc/i },
+  { ad: 'Ford Kuga Titanium', fiyat: 2780900, model: /kuga/i },
+  { ad: 'Toyota Corolla Hybrid Dream e-CVT', fiyat: 2808000, model: /corolla(?!\s*cross)/i, trim: /hybrid|hibrit/i },
+  { ad: 'Peugeot 3008 Hybrid', fiyat: 2851000, model: /\b3008\b/i },
+  { ad: 'Opel Grandland', fiyat: 3102000, model: /grandland/i },
+  { ad: 'VW ID.4 Pure (elektrik)', fiyat: 3126150, model: /id\.?\s?4/i },
   { ad: 'Nissan Qashqai Skypack', fiyat: 3134200, model: /qashqai/i, trim: /skypack(?![\s\S]*4x4)/i },
+  { ad: 'Hyundai IONIQ 5', fiyat: 3150000, model: /ioniq\s*5/i },
+  { ad: 'Peugeot 5008 Hybrid', fiyat: 3290000, model: /\b5008\b/i },
+  { ad: 'Toyota Corolla Cross Hybrid Flame', fiyat: 3320000, model: /corolla\s*cross/i },
   { ad: 'Nissan Qashqai Skypack 4x4', fiyat: 3335400, model: /qashqai/i, trim: /4x4/i },
+  { ad: 'VW Tiguan Life DSG', fiyat: 3402000, model: /tiguan/i },
+  { ad: 'VW Passat Impression DSG', fiyat: 3600000, model: /passat/i },
+  { ad: 'VW Tayron Life DSG', fiyat: 3667000, model: /tayron/i },
   { ad: 'Skoda Superb Premium 1.5 TSI', fiyat: 3774900, model: /superb/i },
+  { ad: 'Nissan X-Trail Platinum', fiyat: 5098300, model: /x-?trail/i },
   { ad: 'Audi Q6 e-tron quattro (lüks EV — motor bu segmentte kalibre değil)', fiyat: 9093459, model: /\bq6\b/i },
 ];
 ANCHOR_DB.forEach((a, i) => {
@@ -541,13 +597,14 @@ ANCHOR_DB.forEach((a, i) => {
   $('anchorSelect').appendChild(o);
 });
 
-// İsimden çapa bul: önce model, sonra donanım; donanım eşleşmezse orta fiyatlı aday
+// İsimden çapa bul: önce model, sonra donanım; donanım eşleşmezse GİRİŞ donanım (en düşük liste) varsayılır
 function findAnchor(name) {
   const models = ANCHOR_DB.filter(a => a.model.test(name));
   if (!models.length) return null;
   const trimHits = models.filter(a => a.trim && a.trim.test(name));
   const pool = (trimHits.length ? trimHits : models).slice().sort((a, b) => a.fiyat - b.fiyat);
-  return { anchor: pool[Math.floor((pool.length - 1) / 2)], exactTrim: trimHits.length > 0, adaySayisi: models.length };
+  const idx = trimHits.length ? Math.floor((pool.length - 1) / 2) : 0;
+  return { anchor: pool[idx], exactTrim: trimHits.length > 0, adaySayisi: models.length };
 }
 
 let anchorWasAuto = false;
@@ -568,7 +625,7 @@ function autoAnchor(name) {
   anchorWasAuto = true;
   info.innerHTML = '🔎 <b>Çapa otomatik bulundu:</b> ' + hit.anchor.ad + ' — <b>' + hit.anchor.fiyat.toLocaleString('tr-TR') + ' TL</b> <span class="wf-note">(Temmuz 2026 liste fiyatı'
     + (hit.anchor.muadil ? ' · sıfırı satılmıyor, segment muadili' : '') + ')</span>'
-    + (hit.exactTrim ? '' : ' · <i>donanım birebir eşleşmedi, en yakın seçildi</i>')
+    + (hit.exactTrim ? '' : ' · <i>donanım eşleşmedi, giriş donanım varsayıldı</i>')
     + ' · yanlışsa listeden değiştir.';
   calc();
   return true;

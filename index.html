@@ -788,8 +788,12 @@ const CAR_BRANDS = ['toyota','fiat','renault','dacia','hyundai','honda','volkswa
 
 // OCR metninden marka + model ifadesi çıkar: marka kelimesini bul, yıl/km/TL gibi
 // veri belirtecine rastlayana kadar (en çok 5 kelime) devamını al.
+// Türkçe büyük İ, JS regex /i bayrağıyla 'i' ile eşleşmez (Unicode basit çift değil) — normalize et.
+// ASCII I'ya dokunma: İngilizce model adları (TSI, INSTER) bozulur; I↔i eşleşmesini /i bayrağı zaten yapar.
+const trFix = s => s.replace(/İ/g, 'i');
+
 function carNameFromText(text) {
-  const flat = text.replace(/\s+/g, ' ');
+  const flat = trFix(text).replace(/\s+/g, ' ');
   const brandRe = new RegExp('\\b(' + CAR_BRANDS.join('|') + ')\\b', 'i');
   let m = flat.match(brandRe);
   if (!m) {
@@ -813,7 +817,7 @@ function carNameFromText(text) {
 }
 
 function ocrExtract(text) {
-  const flat = text.replace(/\r/g, '').replace(/\n/g, ' ');
+  const flat = trFix(text).replace(/\r/g, '').replace(/\n/g, ' ');
   const out = {};
   const name = carNameFromText(text);
   if (name) out.name = name;

@@ -374,6 +374,7 @@
           <option value="">Hazır çapa seç (Temmuz 2026 liste fiyatları) ya da aşağıya elle gir…</option>
         </select>
         <input type="number" inputmode="numeric" id="newPrice" value="" step="10000" placeholder="örn. 2.020.500 — bugünkü sıfır muadilinin liste fiyatı" style="margin-top:8px">
+        <p class="link-note hidden" id="anchorInfo" style="margin-top:6px"></p>
         <p class="link-note" style="margin-top:4px">Kaynak: marka fiyat listeleri (liste/tavsiye fiyat; kampanyalılar daha düşük olabilir).
         Aracın sıfırı artık satılmıyorsa en yakın segment muadilini seç.</p>
         <div class="row2">
@@ -497,33 +498,92 @@ function gapClass(gap) {
   return ['vhigh', 'Belirgin Şekilde Yüksek'];
 }
 
-// ---- HAZIR ÇAPALAR (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
-const ANCHORS = [
-  ['Dacia Sandero Essential', 1299000], ['Kia Picanto Feel AMT', 1435000],
-  ['Hyundai i20 Jump Manuel', 1487000], ['Fiat Egea Sedan Dizel Easy Manuel', 1499900],
-  ['Opel Corsa Edition Manuel', 1535000], ['Citroën ë-C3 Plus', 1565000],
-  ['Hyundai Bayon Jump Manuel', 1587000], ['Fiat Egea Sedan Dizel Lounge Manuel', 1674900],
-  ['Renault Clio Evolution X-Tronic', 1750000], ['Hyundai i20 Style DCT', 1816000],
-  ['Renault Clio Evolution Plus EDC', 1830000], ['Dacia Duster Evolution ECO-G', 1865000],
-  ['Peugeot e-208 GT (elektrik)', 1999500], ['Fiat Egea Cross Lounge 1.6 MJT DCT', 2020500],
-  ['Fiat Egea Sedan Lounge 1.6 Dizel Otomatik', 2021900], ['Dacia Duster Techno EDC', 2080000],
-  ['VW Taigo Life Manuel', 2165000], ['Toyota Yaris Hybrid Flame', 2245000],
-  ['VW Golf Impression Manuel', 2258000], ['VW T-Cross Life Manuel', 2275000],
-  ['Toyota Corolla Vision Plus', 2284000], ['Hyundai Tucson Comfort DCT', 2576248],
-  ['Honda HR-V e:HEV Elegance', 2659000], ['Skoda Octavia Sedan Premium', 2734900],
-  ['Toyota Corolla Hybrid Dream', 2808000], ['Nissan Qashqai Skypack', 3134200],
-  ['Nissan Qashqai Skypack 4x4', 3335400], ['Skoda Superb Premium 1.5 TSI', 3774900],
-  ['Audi Q6 e-tron quattro (lüks EV — motor bu segmentte kalibre değil)', 9093459],
+// ---- ÇAPA VERİTABANI (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
+// model: isimden otomatik eşleştirme deseni; trim: donanım ayrıştırma; muadil: sıfırı satılmayan model
+const ANCHOR_DB = [
+  { ad: 'Dacia Sandero Essential', fiyat: 1299000, model: /sandero/i, trim: /essential/i },
+  { ad: 'Kia Picanto Feel AMT', fiyat: 1435000, model: /picanto/i },
+  { ad: 'Hyundai i20 Jump Manuel', fiyat: 1487000, model: /\bi20\b/i, trim: /jump/i },
+  { ad: 'Fiat Egea Sedan Dizel Easy Manuel', fiyat: 1499900, model: /egea(?!\s*cross)/i, trim: /easy/i },
+  { ad: 'Opel Corsa Edition Manuel', fiyat: 1535000, model: /corsa/i, trim: /edition/i },
+  { ad: 'Citroën ë-C3 Plus', fiyat: 1565000, model: /\bë?-?c3\b/i },
+  { ad: 'Hyundai Bayon Jump Manuel', fiyat: 1587000, model: /bayon/i },
+  { ad: 'Fiat Egea Sedan Dizel Lounge Manuel', fiyat: 1674900, model: /egea(?!\s*cross)/i, trim: /lounge(?![\s\S]*(otomatik|dct))/i },
+  { ad: 'Renault Clio Evolution X-Tronic', fiyat: 1750000, model: /clio/i, trim: /x-?tronic/i },
+  { ad: 'Hyundai i20 Style DCT', fiyat: 1816000, model: /\bi20\b/i, trim: /style|dct/i },
+  { ad: 'VW Polo (muadil: B segment üst donanım ort.)', fiyat: 1823000, model: /\bpolo\b/i, muadil: true },
+  { ad: 'Renault Clio Evolution Plus EDC', fiyat: 1830000, model: /clio/i, trim: /plus|edc/i },
+  { ad: 'Dacia Duster Evolution ECO-G', fiyat: 1865000, model: /duster/i, trim: /evolution|eco/i },
+  { ad: 'Honda City (muadil sepeti: Egea Lounge AT + i20 Style + Clio EDC ort.)', fiyat: 1889300, model: /\bcity\b/i, muadil: true },
+  { ad: 'Peugeot e-208 GT (elektrik)', fiyat: 1999500, model: /\be?-?208\b/i },
+  { ad: 'Fiat Egea Cross Lounge 1.6 MJT DCT', fiyat: 2020500, model: /egea\s*-?cross/i },
+  { ad: 'Fiat Egea Sedan Lounge 1.6 Dizel Otomatik', fiyat: 2021900, model: /egea(?!\s*cross)/i, trim: /lounge[\s\S]*(otomatik|dct)|(otomatik|dct)[\s\S]*lounge/i },
+  { ad: 'Dacia Duster Techno EDC', fiyat: 2080000, model: /duster/i, trim: /techno|edc/i },
+  { ad: 'VW Taigo Life Manuel', fiyat: 2165000, model: /taigo/i },
+  { ad: 'Toyota Yaris Hybrid Flame', fiyat: 2245000, model: /yaris/i },
+  { ad: 'VW Golf Impression Manuel', fiyat: 2258000, model: /golf/i },
+  { ad: 'VW T-Cross Life Manuel', fiyat: 2275000, model: /t[\s-]?cross/i },
+  { ad: 'Toyota Corolla Vision Plus', fiyat: 2284000, model: /corolla/i, trim: /vision/i },
+  { ad: 'Hyundai Tucson Comfort DCT', fiyat: 2576248, model: /tucson/i },
+  { ad: 'Honda HR-V e:HEV Elegance', fiyat: 2659000, model: /hr-?v/i },
+  { ad: 'Skoda Octavia Sedan Premium', fiyat: 2734900, model: /octavia/i },
+  { ad: 'Toyota Avensis (muadil: Octavia Premium)', fiyat: 2734900, model: /avensis/i, muadil: true },
+  { ad: 'Toyota Corolla Hybrid Dream', fiyat: 2808000, model: /corolla/i, trim: /hybrid|hibrit/i },
+  { ad: 'Nissan Qashqai Skypack', fiyat: 3134200, model: /qashqai/i, trim: /skypack(?![\s\S]*4x4)/i },
+  { ad: 'Nissan Qashqai Skypack 4x4', fiyat: 3335400, model: /qashqai/i, trim: /4x4/i },
+  { ad: 'Skoda Superb Premium 1.5 TSI', fiyat: 3774900, model: /superb/i },
+  { ad: 'Audi Q6 e-tron quattro (lüks EV — motor bu segmentte kalibre değil)', fiyat: 9093459, model: /\bq6\b/i },
 ];
-ANCHORS.forEach(([ad, fiyat]) => {
+ANCHOR_DB.forEach((a, i) => {
   const o = document.createElement('option');
-  o.value = fiyat;
-  o.textContent = ad + ' — ' + fiyat.toLocaleString('tr-TR') + ' TL';
+  o.value = i;
+  o.textContent = a.ad + ' — ' + a.fiyat.toLocaleString('tr-TR') + ' TL';
   $('anchorSelect').appendChild(o);
 });
+
+// İsimden çapa bul: önce model, sonra donanım; donanım eşleşmezse orta fiyatlı aday
+function findAnchor(name) {
+  const models = ANCHOR_DB.filter(a => a.model.test(name));
+  if (!models.length) return null;
+  const trimHits = models.filter(a => a.trim && a.trim.test(name));
+  const pool = (trimHits.length ? trimHits : models).slice().sort((a, b) => a.fiyat - b.fiyat);
+  return { anchor: pool[Math.floor((pool.length - 1) / 2)], exactTrim: trimHits.length > 0, adaySayisi: models.length };
+}
+
+let anchorWasAuto = false;
+function autoAnchor(name) {
+  const info = $('anchorInfo');
+  if (val('newPrice') > 0 && !anchorWasAuto) return false; // kullanıcının elle girdiği çapaya dokunma
+  const hit = name ? findAnchor(name) : null;
+  info.classList.remove('hidden');
+  if (!hit) {
+    $('newPrice').value = ''; $('anchorSelect').value = '';
+    anchorWasAuto = false;
+    info.innerHTML = '⚠️ Bu model için çapa veritabanında kayıt yok — listeden en yakın muadili seç ya da liste fiyatını elle gir. <span class="wf-note">(Veritabanı her ay büyüyor.)</span>';
+    calc();
+    return false;
+  }
+  $('newPrice').value = hit.anchor.fiyat;
+  $('anchorSelect').value = ANCHOR_DB.indexOf(hit.anchor);
+  anchorWasAuto = true;
+  info.innerHTML = '🔎 <b>Çapa otomatik bulundu:</b> ' + hit.anchor.ad + ' — <b>' + hit.anchor.fiyat.toLocaleString('tr-TR') + ' TL</b> <span class="wf-note">(Temmuz 2026 liste fiyatı'
+    + (hit.anchor.muadil ? ' · sıfırı satılmıyor, segment muadili' : '') + ')</span>'
+    + (hit.exactTrim ? '' : ' · <i>donanım birebir eşleşmedi, en yakın seçildi</i>')
+    + ' · yanlışsa listeden değiştir.';
+  calc();
+  return true;
+}
+
 $('anchorSelect').addEventListener('change', e => {
-  if (e.target.value) { $('newPrice').value = e.target.value; calc(); }
+  if (e.target.value === '') return;
+  const a = ANCHOR_DB[+e.target.value];
+  $('newPrice').value = a.fiyat;
+  anchorWasAuto = false;
+  $('anchorInfo').classList.remove('hidden');
+  $('anchorInfo').innerHTML = 'Çapa: <b>' + a.ad + '</b> — ' + a.fiyat.toLocaleString('tr-TR') + ' TL <span class="wf-note">(Temmuz 2026 liste, elle seçildi)</span>';
+  calc();
 });
+$('newPrice').addEventListener('input', () => { anchorWasAuto = false; });
 
 // ---- DEĞERLEME MODU ----
 // İlan linkinden okunabilir araç adı çıkar (ör. "...bmw-5-serisi-525d-xdrive..." → "Bmw 5 Serisi 525d Xdrive")
@@ -790,6 +850,7 @@ function applyOcr() {
     if (v !== '') $(map[k]).value = v;
   }
   $('carName').value = $('ocr_name').value.trim();
+  autoAnchor($('carName').value); // isimden çapayı sistem bulur; bulamazsa açıkça söyler
   calc();
   $('ocrConfirm').classList.add('hidden');
   $('confDetail').textContent = 'Görüntüden okundu, kullanıcı onayladı · OCR tarayıcıda çalıştı';
@@ -874,6 +935,12 @@ function switchTab(mode) {
 // Üst bar "Metodoloji" linki: kapalı akordeonu açıp öyle kaydır — boş görünmesin
 document.querySelectorAll('a[href="#metodoloji"]').forEach(a =>
   a.addEventListener('click', () => { $('metodoloji').open = true; }));
+
+// Marka/model yazılınca ya da link yapıştırılınca çapayı otomatik ara
+$('carName').addEventListener('change', () => autoAnchor($('carName').value.trim()));
+$('listingUrl').addEventListener('change', () => {
+  if (!$('carName').value.trim()) autoAnchor(carNameFromUrl($('listingUrl').value.trim()));
+});
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
  'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']

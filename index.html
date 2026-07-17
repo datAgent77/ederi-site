@@ -145,8 +145,9 @@
 
   label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
   label:first-of-type { margin-top: 0; }
-  input, select { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; font-family: inherit; }
-  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  input, select, textarea { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; font-family: inherit; }
+  textarea { resize: vertical; min-height: 92px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
   .wf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
@@ -304,7 +305,7 @@
   <!-- ================= DEĞERLEME MODU ================= -->
   <div id="modeVal">
     <div class="card ocr-card">
-      <h2>📷 Görüntüden Analiz</h2>
+      <h2>📷 Görüntüden veya Metinden Analiz</h2>
       <div class="dropzone" id="dropzone">
         <div class="dz-ic">📷</div>
         <p><b>İlanın ekran görüntüsünü</b> seç, buraya sürükle ya da panodan yapıştır.</p>
@@ -312,6 +313,9 @@
         Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
       </div>
       <input type="file" id="ocrFile" accept="image/*" style="display:none">
+      <label style="margin-top:14px">📋 Ya da ilan metnini yapıştır <span class="wf-note">(açıklama, özellikler, ekspertiz bilgisi — ne varsa)</span></label>
+      <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
+      <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
       <div class="ocr-status hidden" id="ocrStatus"></div>
       <div class="ocr-confirm hidden" id="ocrConfirm"></div>
       <div class="link-bar" style="margin-top:14px">
@@ -867,8 +871,8 @@ function ocrExtract(text) {
   // Kaporta: boyasız/değişensiz → 0; "1 boyalı, 3 lokal boyalı" → toplanır (arabam.com kalıbı)
   if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
   else {
-    // "boyalı"nın tipik OCR bozulmalarına tolerans: boyali/boyalh/boyal1/boyal
-    const BOYALI = 'boya[l1][ıih1!|l]?';
+    // "boyalı" + OCR bozulmaları (boyali/boyalh/boyal1) + ekspertiz yazımı "N PARÇA BOYA"
+    const BOYALI = '(?:boya[l1][ıih1!|l]?|boya\\b)';
     const hits = [...flat.matchAll(new RegExp('(\\d{1,2})\\s*(?:adet\\s*)?(?:par[çc]a\\s*)?(?:lokal\\s*)?' + BOYALI, 'gi'))];
     if (hits.length) out.painted = hits.reduce((s, h) => s + parseInt(h[1], 10), 0);
     else {
@@ -975,6 +979,14 @@ function applyOcr() {
   $('ocrConfirm').classList.add('hidden');
   $('confDetail').textContent = 'Görüntüden okundu, kullanıcı onayladı · OCR tarayıcıda çalıştı';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Metinden analiz: yapıştırılan ilan metni OCR ile aynı çıkarım + onay akışından geçer
+function analyzeText() {
+  const t = $('listingText').value.trim();
+  if (!t) { $('listingText').focus(); return; }
+  $('ocrStatus').classList.add('hidden');
+  showOcrConfirm(ocrExtract(t), t);
 }
 
 const dz = $('dropzone');

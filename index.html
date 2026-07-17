@@ -291,6 +291,8 @@
     <div class="grid">
       <div class="card">
         <h2>Araç Bilgileri</h2>
+        <label>Marka / Model (isteğe bağlı — sonuç kartında görünür)</label>
+        <input type="text" id="carName" placeholder="Örn: Toyota Avensis 1.6 Elegant">
         <label>Sıfır muadil fiyatı (bugünkü, TL)</label>
         <input type="number" inputmode="numeric" id="newPrice" value="1500000" step="10000">
         <div class="row2">
@@ -434,8 +436,8 @@ function carNameFromUrl(url) {
 
 function analyzedSummary(car) {
   const parts = [];
-  const name = carNameFromUrl($('listingUrl').value.trim());
-  if (name) parts.push('<b>' + name + '</b>');
+  const name = $('carName').value.trim() || carNameFromUrl($('listingUrl').value.trim());
+  if (name) parts.push('<b>' + name.replace(/</g, '&lt;') + '</b>');
   if (car.year) parts.push(car.year + ' model');
   if (car.km) parts.push(car.km.toLocaleString('tr-TR') + ' km');
   parts.push(car.tramer > 0 ? 'tramer ' + fmt(car.tramer) : 'tramersiz');
@@ -521,9 +523,32 @@ function loadTesseract() {
 
 const trNum = s => parseInt(String(s).replace(/,\d{1,2}$/, '').replace(/[.\s]/g, ''), 10);
 
+const CAR_BRANDS = ['toyota','fiat','renault','dacia','hyundai','honda','volkswagen','vw','skoda','škoda','opel','peugeot','citroen','citroën','ford','kia','nissan','audi','bmw','mercedes','seat','cupra','volvo','tesla','chery','mg','togg','suzuki','mitsubishi','jeep','mazda','alfa romeo','mini','land rover','porsche','byd','jaecoo','omoda','lexus','subaru','ssangyong','isuzu','dfsk'];
+
+// OCR metninden marka + model ifadesi çıkar: marka kelimesini bul, yıl/km/TL gibi
+// veri belirtecine rastlayana kadar (en çok 5 kelime) devamını al.
+function carNameFromText(text) {
+  const flat = text.replace(/\s+/g, ' ');
+  const brandRe = new RegExp('\\b(' + CAR_BRANDS.join('|') + ')\\b', 'i');
+  const m = flat.match(brandRe);
+  if (!m) return '';
+  const rest = flat.slice(m.index).split(' ').filter(Boolean);
+  const words = [];
+  for (const w of rest) {
+    if (words.length >= 6) break;
+    // Dur: yıl (2011), km/TL belirteci, uzun sayı (148.000), ilan etiket kelimeleri — "1.6" gibi motor hacmine izin ver
+    if (/^(19|20)\d{2}$/.test(w) || /km|tl|₺/i.test(w) || /^[\d.,]{4,}$/.test(w)
+        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden)$/i.test(w)) break;
+    words.push(w);
+  }
+  return words.join(' ');
+}
+
 function ocrExtract(text) {
   const flat = text.replace(/\r/g, '').replace(/\n/g, ' ');
   const out = {};
+  const name = carNameFromText(text);
+  if (name) out.name = name;
   const NUM = '([\\d.,]{2,})';
   const grab = (labels, pattern) => {
     for (const l of labels) {
@@ -598,6 +623,9 @@ function showOcrConfirm(fields, rawText) {
   const c = $('ocrConfirm');
   c.classList.remove('hidden');
   c.innerHTML = '<p class="ocr-lead">Görüntüden okunanlar — <b>lütfen kontrol et, eksiği/yanlışı düzelt:</b></p>'
+    + '<div style="margin-bottom:10px"><label>Marka / Model '
+    + (fields.name ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+    + '</label><input type="text" id="ocr_name" value="' + (fields.name || '').replace(/"/g, '&quot;') + '"></div>'
     + '<div class="coef-grid">'
     + OCR_FIELDS.map(([k, label]) =>
       '<div><label>' + label + ' '
@@ -618,6 +646,7 @@ function applyOcr() {
     const v = $('ocr_' + k).value;
     if (v !== '') $(map[k]).value = v;
   }
+  $('carName').value = $('ocr_name').value.trim();
   calc();
   $('ocrConfirm').classList.add('hidden');
   $('confDetail').textContent = 'Görüntüden okundu, kullanıcı onayladı · OCR tarayıcıda çalıştı';
@@ -699,7 +728,7 @@ function switchTab(mode) {
   if (mode === 'bud') runBudget();
 }
 
-['newPrice','modelYear','km','tramer','painted','replaced','askPrice',
+['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
  'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']
   .forEach(id => $(id).addEventListener('input', calc));
 calc();

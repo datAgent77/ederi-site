@@ -417,7 +417,8 @@
       </div>
       <div class="budget-note">
         Fiyat filtresi değil, <b style="color:var(--text)">değer avcılığı</b>: bütçendeki ilanlar asıl ederine göre puanlanır,
-        adil ve ucuz fiyatlananlar öne çıkar. <span class="demo-tag">DEMO İLAN VERİSİ</span>
+        adil ve ucuz fiyatlananlar öne çıkar. <span class="demo-tag">GERÇEK İLANLAR — Temmuz 2026 kalibrasyon defterinden</span><br>
+        <span style="font-size:11px">"tramer?" işaretli ilanlarda tramer beyan edilmemişti; iyimser senaryo gösterilir. Gerçek üründe bu liste canlı ilan akışından beslenecek.</span>
       </div>
     </div>
     <div class="car-list" id="carList"></div>
@@ -942,18 +943,19 @@ document.addEventListener('paste', e => {
   if (item) { e.preventDefault(); handleImage(item.getAsFile()); }
 });
 
-// ---- BÜTÇE MODU (demo ilan seti) ----
+// ---- BÜTÇE MODU ----
+// Kalibrasyon defterindeki GERÇEK ilanlar (Temmuz 2026'da analiz edildi; tramer belirsizse iyimser senaryo).
+// Q6 e-tron bilinçli olarak dışarıda: motor lüks EV segmentinde henüz kalibre değil.
 const DEMO_CARS = [
-  { name: 'Renault Clio 1.0 TCe Touch',    year: 2022, km: 61000,  tramer: 0,      painted: 0, replaced: 0, newPrice: 1150000, ask: 830000 },
-  { name: 'Fiat Egea 1.4 Fire Urban',      year: 2021, km: 98000,  tramer: 12000,  painted: 1, replaced: 0, newPrice: 1050000, ask: 720000 },
-  { name: 'Hyundai i20 1.4 MPI Style',     year: 2020, km: 84000,  tramer: 25000,  painted: 2, replaced: 0, newPrice: 1200000, ask: 850000 },
-  { name: 'VW Polo 1.0 TSI Comfortline',   year: 2019, km: 132000, tramer: 45000,  painted: 3, replaced: 1, newPrice: 1350000, ask: 890000 },
-  { name: 'Toyota Corolla 1.6 Vision',     year: 2018, km: 155000, tramer: 30000,  painted: 2, replaced: 0, newPrice: 1550000, ask: 980000 },
-  { name: 'Honda Civic 1.6 Elegance',      year: 2017, km: 178000, tramer: 90000,  painted: 4, replaced: 2, newPrice: 1700000, ask: 995000 },
-  { name: 'Opel Corsa 1.4 Enjoy',          year: 2021, km: 55000,  tramer: 0,      painted: 0, replaced: 0, newPrice: 1000000, ask: 760000 },
-  { name: 'Peugeot 208 1.2 PureTech',      year: 2022, km: 47000,  tramer: 18000,  painted: 1, replaced: 0, newPrice: 1250000, ask: 990000 },
-  { name: 'Dacia Duster 1.3 TCe Comfort',  year: 2021, km: 89000,  tramer: 0,      painted: 1, replaced: 0, newPrice: 1300000, ask: 940000 },
-  { name: 'Ford Focus 1.5 TDCi Titanium',  year: 2019, km: 143000, tramer: 120000, painted: 5, replaced: 2, newPrice: 1500000, ask: 870000 },
+  { name: '2023 Fiat Egea 1.3 MJT Easy (Hatay)',            year: 2023, km: 115900, tramer: 14000, painted: 2, replaced: 0, newPrice: 1499900, ask: 884999 },
+  { name: '2015 Skoda Octavia 1.6 TDI DSG (tramer?)',       year: 2015, km: 214000, tramer: 0,     painted: 2, replaced: 0, newPrice: 2734900, ask: 1310000 },
+  { name: '2011 VW Polo 1.4 Comfortline (tramer?)',         year: 2011, km: 187000, tramer: 0,     painted: 0, replaced: 0, newPrice: 1823000, ask: 632000 },
+  { name: '2023 Nissan Qashqai Skypack 4x4 (tramer?)',      year: 2023, km: 69390,  tramer: 0,     painted: 0, replaced: 0, newPrice: 3335400, ask: 1993000 },
+  { name: '2023 Honda City 1.5 Executive (10 bin km!)',     year: 2023, km: 10401,  tramer: 0,     painted: 0, replaced: 0, newPrice: 1889300, ask: 1440000 },
+  { name: '2022 Skoda Superb 1.5 TSI Elite DSG',            year: 2022, km: 96104,  tramer: 0,     painted: 3, replaced: 0, newPrice: 3774900, ask: 2077000 },
+  { name: '2011 Toyota Avensis 1.6 Elegant LPG (tramer?)',  year: 2011, km: 148000, tramer: 0,     painted: 0, replaced: 0, newPrice: 2734900, ask: 905000 },
+  { name: '2025 Fiat Egea Cross Lounge DCT (11 bin km)',    year: 2025, km: 11500,  tramer: 0,     painted: 0, replaced: 0, newPrice: 2020500, ask: 1710000 },
+  { name: '2014 VW Passat 1.4 TSI DSG (4 boyalı)',          year: 2014, km: 161000, tramer: 0,     painted: 4, replaced: 0, newPrice: 3600000, ask: 1235000 },
 ];
 
 function runBudget() {

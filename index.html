@@ -790,15 +790,22 @@ const CAR_BRANDS = ['toyota','fiat','renault','dacia','hyundai','honda','volkswa
 function carNameFromText(text) {
   const flat = text.replace(/\s+/g, ' ');
   const brandRe = new RegExp('\\b(' + CAR_BRANDS.join('|') + ')\\b', 'i');
-  const m = flat.match(brandRe);
-  if (!m) return '';
+  let m = flat.match(brandRe);
+  if (!m) {
+    // Marka yazmayan ilanlarda (başlıkta sadece model adı) çapa veritabanının model desenlerinden yakala
+    for (const a of ANCHOR_DB) {
+      const mm = flat.match(a.model);
+      if (mm && mm[0].length >= 3) { m = mm; break; }
+    }
+    if (!m) return '';
+  }
   const rest = flat.slice(m.index).split(' ').filter(Boolean);
   const words = [];
   for (const w of rest) {
     if (words.length >= 6) break;
-    // Dur: yıl (2011), km/TL belirteci, uzun sayı (148.000), ilan etiket kelimeleri — "1.6" gibi motor hacmine izin ver
-    if (/^(19|20)\d{2}$/.test(w) || /km|tl|₺/i.test(w) || /^[\d.,]{4,}$/.test(w)
-        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden)$/i.test(w)) break;
+    // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
+    if (/^(19|20)\d{2}$/.test(w) || /^(km|tl|₺)\.?,?$/i.test(w) || /[\d.](km|tl)$/i.test(w) || /^[\d.,]{4,}$/.test(w)
+        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer)$/i.test(w)) break;
     words.push(w);
   }
   return words.join(' ');
@@ -838,20 +845,25 @@ function ocrExtract(text) {
   }
   if (ask) out.ask = ask;
   // Tramer: "tramersiz / hasar kaydı yok" → 0, yoksa etiketli tutar
-  if (/tramersiz|hasar\s*(?:kayd[ıi])?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
+  if (/tramersiz|tramer\s*(?:kayd[ıi])?\s*yok|hasar\s*(?:kayd[ıi])?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
   else {
     const tr = grab(['tramer\\s*(?:kayd[ıi]|tutar[ıi]|toplam[ıi])?', 'hasar\\s*(?:kayd[ıi]|tutar[ıi]|bedeli)'], NUM);
     if (tr != null) { const v = trNum(tr); if (!isNaN(v) && v !== out.year) out.tramer = v; }
   }
-  // Kaporta: boyasız/değişensiz → 0, yoksa "3 boyalı" / "boyalı: 3" kalıpları
+  // Kaporta: boyasız/değişensiz → 0; "1 boyalı, 3 lokal boyalı" → toplanır (arabam.com kalıbı)
   if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
   else {
-    const b = flat.match(/(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?boyal[ıi]/i) || flat.match(/boyal[ıi](?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b/i);
-    if (b) out.painted = parseInt(b[1], 10);
+    const hits = [...flat.matchAll(/(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?(?:lokal\s*)?boyal[ıi]/gi)];
+    if (hits.length) out.painted = hits.reduce((s, h) => s + parseInt(h[1], 10), 0);
+    else {
+      const b = flat.match(/boyal[ıi](?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b/i);
+      if (b) out.painted = parseInt(b[1], 10);
+    }
   }
-  if (/de[ğg]i[şs]ensiz/i.test(flat)) out.replaced = 0;
+  if (/de[ğg]i[şs]ensiz|de[ğg]i[şs]en\s*(?:par[çc]a\s*)?(?:ve\s*)?(?:tramer\s*)?yok/i.test(flat)) out.replaced = 0;
   else {
-    const d = flat.match(/(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i) || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b/i);
+    const d = flat.match(/(?<!:)(?<!:\s)\b(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i)
+      || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b(?!\s*(?:lokal\s*)?boyal)/i);
     if (d) out.replaced = parseInt(d[1], 10);
   }
   return out;

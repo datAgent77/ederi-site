@@ -71,7 +71,19 @@
     border: 1px solid var(--border); background: linear-gradient(160deg, var(--card) 0%, var(--card2) 100%);
   }
   .decision .label { font-size: 12px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
-  .decision .value { font-size: 44px; font-weight: 800; margin: 6px 0 2px; }
+  .decision .value { font-size: 30px; font-weight: 800; }
+
+  /* İstenen vs hesaplanan karşılaştırması */
+  .compare { display: flex; justify-content: center; align-items: stretch; gap: 10px; margin: 12px 0 6px; }
+  .cmp-box { flex: 1; max-width: 300px; background: rgba(255,255,255,.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 10px 12px; display: flex; flex-direction: column; justify-content: center; }
+  .cmp-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+  .cmp-box .v.ask { font-size: 30px; font-weight: 800; color: var(--text); }
+  .cmp-box .s { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .cmp-vs { align-self: center; font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
+  .gap-line { font-size: 14px; font-weight: 700; margin: 8px 0 2px; }
+  .gap-line span { color: var(--muted); font-weight: 600; }
   .decision .analyzed { display: inline-block; font-size: 13px; color: var(--text); background: rgba(77,163,255,.12);
     border: 1px solid rgba(77,163,255,.3); border-radius: 16px; padding: 5px 14px; margin: 6px 0 2px; max-width: 100%; }
   .decision .analyzed:empty { display: none; }
@@ -204,8 +216,11 @@
     .tabs { gap: 8px; }
     .tab { flex: 1; padding: 13px 8px; font-size: 13px; }
     .card { padding: 16px 14px; }
-    .decision { padding: 20px 14px; }
-    .decision .value { font-size: 34px; }
+    .decision { padding: 20px 12px; }
+    .decision .value, .cmp-box .v.ask { font-size: 19px; white-space: nowrap; }
+    .compare { gap: 8px; }
+    .cmp-box { padding: 12px 8px 10px; }
+    .cmp-vs { width: 28px; height: 28px; font-size: 10px; }
     .deal-row { gap: 14px; }
     .link-bar { flex-direction: column; }
     .coef-grid { grid-template-columns: 1fr; }
@@ -269,9 +284,22 @@
     </div>
 
     <div class="decision" id="decision">
-      <div class="label">Ürünün gerçek verilerle hesaplanan değeri</div>
-      <div class="value" id="fairValue">—</div>
+      <div class="label">Analiz sonucu — karşılaştırma</div>
       <div class="analyzed" id="analyzedCar"></div>
+      <div class="compare">
+        <div class="cmp-box">
+          <div class="k">İstenen fiyat</div>
+          <div class="v ask" id="askShown">—</div>
+          <div class="s">satıcının ilan fiyatı</div>
+        </div>
+        <div class="cmp-vs" id="cmpVs">vs</div>
+        <div class="cmp-box">
+          <div class="k">Hesaplanan değer</div>
+          <div class="value" id="fairValue">—</div>
+          <div class="s">ürünün gerçek verilerle hesaplanan ederi</div>
+        </div>
+      </div>
+      <div class="gap-line" id="gapLine"></div>
       <div class="stars" id="stars"></div>
       <div class="verdict-line" id="verdictLine"></div>
       <div class="verdict-sub" id="verdictSub"></div>
@@ -452,6 +480,7 @@ function calc() {
   const askPrice = val('askPrice');
 
   $('fairValue').textContent = fmt(r.fair);
+  $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
   $('analyzedCar').innerHTML = r.fair > 0 ? analyzedSummary(car) : '';
   const box = $('decision');
   box.className = 'decision';
@@ -463,6 +492,9 @@ function calc() {
     const stars = cls==='below'||cls==='fair' ? 5 : cls==='over' ? 3 : cls==='high' ? 2 : 1;
 
     box.classList.add(cls);
+    $('gapLine').innerHTML = diff >= 0
+      ? `<span>Fark:</span> istenen, hesaplanan değerden ${fmt(Math.abs(diff))} yüksek (+%${gap.toFixed(0)})`
+      : `<span>Fark:</span> istenen, hesaplanan değerden ${fmt(Math.abs(diff))} düşük (−%${Math.abs(gap).toFixed(0)})`;
     $('stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
     $('verdictLine').textContent = verdict;
     $('verdictSub').innerHTML = gap >= 0
@@ -476,6 +508,7 @@ function calc() {
       : fmt(askPrice);
     $('dealRow').style.display = '';
   } else {
+    $('gapLine').textContent = '';
     $('stars').textContent = '';
     $('verdictLine').textContent = 'İlan fiyatı girilmedi';
     $('verdictSub').textContent = 'Karşılaştırma için ilan fiyatını girin.';
@@ -491,8 +524,14 @@ function calc() {
       '−' + fmt(Math.abs(r.tramerDed)), 'neg'],
     [`Kaporta <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
       '−' + fmt(Math.abs(r.bodyDed)), 'neg'],
-    ['EDERİ', fmt(r.fair), 'total'],
+    ['HESAPLANAN DEĞER (EDERİ)', fmt(r.fair), 'total'],
   ];
+  if (askPrice > 0 && r.fair > 0) {
+    const diff = askPrice - r.fair;
+    wf.push(['İstenen fiyat (ilan)', fmt(askPrice), '']);
+    wf.push([`Fark <span class="wf-note">(istenen − hesaplanan)</span>`,
+      (diff >= 0 ? '+' : '−') + fmt(Math.abs(diff)), diff >= 0 ? 'neg' : 'pos']);
+  }
   $('waterfall').innerHTML = wf.map(([l,v,c]) =>
     `<div class="wf-item"><span>${l}</span><span class="${c}">${v}</span></div>`).join('');
 }

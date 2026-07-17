@@ -7,31 +7,36 @@
 <meta name="description" content="Ederi: Türkiye'nin ilk bağımsız dijital rayiç platformu. Satmadan önce değerine, almadan önce ederine bak. Bağımsız, şeffaf, ücretsiz — rayiç değeri kalem kalem gerekçesiyle gösterir.">
 <style>
   :root {
-    --bg: #0f1420; --card: #1a2233; --card2: #202b42;
+    --bg: #0b111b; --card: #121a26; --card2: #1a2433;
     --text: #e8edf5; --muted: #8a97ad; --accent: #4da3ff;
     --green: #3ecf8e; --yellow: #f5c451; --orange: #ff9f43; --red: #ff6b6b;
-    --border: #2b3853;
+    --border: #243044;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   [id] { scroll-margin-top: 70px; } /* çapa hedefleri yapışkan barın altında kalmasın */
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh;
          padding: 0 16px 16px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-  .wrap { max-width: 1020px; margin: 0 auto; }
+  .wrap { max-width: 1180px; margin: 0 auto; }
 
-  /* Yapışkan üst bar — tek sayfa hissinin çapası */
+  /* Yapışkan üst bar */
   .topbar { position: sticky; top: 0; z-index: 50; margin: 0 -16px 0;
-    background: rgba(15,20,32,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(11,17,27,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
-  .topbar-in { max-width: 1020px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 9px 16px; }
-  .tb-logo { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; flex: none; }
+  .topbar-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding: 10px 20px; }
+  .tb-logo { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex: none; }
   .tb-logo svg { display: block; width: 100%; height: 100%; }
-  .tb-brand { font-weight: 800; font-size: 15px; letter-spacing: .5px; color: var(--text); }
+  .tb-brand { font-weight: 800; font-size: 16px; letter-spacing: .3px; color: var(--text); }
   .tb-brand span { color: var(--accent); }
-  .tb-nav { margin-left: 18px; display: flex; gap: 16px; }
-  .tb-nav a { color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; }
-  .tb-nav a:hover { color: var(--accent); }
-  .tb-tag { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .tb-nav { margin-left: 28px; display: flex; gap: 22px; flex: 1; justify-content: center; }
+  .tb-nav a { color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; transition: color .15s; }
+  .tb-nav a:hover, .tb-nav a.active { color: var(--text); }
+  .tb-nav a.soon { opacity: .45; cursor: default; pointer-events: none; }
+  .tb-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .tb-icon { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); font-size: 16px; cursor: default; display: grid; place-items: center; }
+  .btn-login { padding: 8px 18px; border-radius: 10px; border: none; background: var(--accent);
+    color: #08101f; font-weight: 700; font-size: 13px; cursor: default; opacity: .55; font-family: inherit; }
 
   /* Tabs */
   .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; }
@@ -72,77 +77,109 @@
   .link-note { font-size: 11px; color: var(--muted); margin: 6px 2px 0; }
 
   .decision {
-    border-radius: 16px; padding: 26px; text-align: center; margin-bottom: 20px;
-    border: 1px solid var(--border); background: linear-gradient(160deg, var(--card) 0%, var(--card2) 100%);
+    border-radius: 16px; padding: 26px; text-align: left; margin-bottom: 20px;
+    border: 1px solid var(--border); background: var(--card);
   }
   .decision .label { font-size: 12px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
   .decision .value { font-size: 30px; font-weight: 800; }
-
-  /* Sonuç düzeni: solda karşılaştırma, sağda değerleme özeti */
-  .result-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px; align-items: start; margin-bottom: 20px; }
-  .res-title { font-size: 20px; font-weight: 800; }
-  .res-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 12px; }
-
-  /* İlan fiyatı vs gerçek rayiç değer kartları */
-  .compare { display: flex; justify-content: center; align-items: stretch; gap: 10px; margin: 12px 0 6px; }
-  .cmp-box { flex: 1; background: rgba(255,255,255,.03); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px 12px 14px; display: flex; flex-direction: column; justify-content: flex-start; }
-  .cmp-box.askside { border-color: rgba(255,107,107,.35); background: linear-gradient(165deg, rgba(255,107,107,.09), rgba(255,255,255,.02)); }
-  .cmp-box.fairside { border-color: rgba(62,207,142,.35); background: linear-gradient(165deg, rgba(62,207,142,.09), rgba(255,255,255,.02)); }
-  .cmp-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
-  .cmp-box .v.ask { font-size: 30px; font-weight: 800; color: var(--text); }
-  .cmp-box .s { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-  .cmp-vs { align-self: center; font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
-    border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; flex: none; }
-  .cmp-badge { margin: 10px auto 0; font-size: 12px; font-weight: 700; border-radius: 10px; padding: 7px 12px;
-    display: inline-block; line-height: 1.5; }
-  .cmp-badge.up { background: rgba(255,107,107,.14); color: var(--red); }
-  .cmp-badge.down { background: rgba(77,163,255,.14); color: var(--accent); }
-  .cmp-badge.conf { background: rgba(62,207,142,.1); color: var(--text); font-weight: 600; font-size: 11px; }
-  .cmp-badge.conf .demo-tag { vertical-align: 1px; }
-
-  /* Uzman tavsiyesi */
-  .advice { margin-top: 16px; background: rgba(245,196,81,.07); border: 1px solid rgba(245,196,81,.25);
-    border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.6; text-align: left; color: var(--text); }
-  .advice .t { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--yellow); font-weight: 800; display: block; margin-bottom: 3px; }
-
-  /* Değerleme özeti paneli */
-  .side-summary .wf-item { font-size: 13px; }
-  .total-box { background: rgba(62,207,142,.08); border: 1px solid rgba(62,207,142,.3); border-radius: 12px;
-    padding: 12px; text-align: center; margin-top: 14px; }
-  .total-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
-  .total-box .v { font-size: 26px; font-weight: 800; color: var(--green); margin-top: 2px; }
-  .side-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
-  .side-note a { color: var(--accent); text-decoration: none; }
-  .decision .analyzed { display: inline-block; font-size: 13px; color: var(--text); background: rgba(77,163,255,.12);
-    border: 1px solid rgba(77,163,255,.3); border-radius: 16px; padding: 5px 14px; margin: 6px 0 2px; max-width: 100%; }
-  .decision .analyzed:empty { display: none; }
-  .decision .analyzed b { color: var(--accent); }
-  .stars { font-size: 20px; letter-spacing: 3px; margin: 6px 0; }
-  .verdict-line { font-size: 17px; font-weight: 700; margin: 10px 0 4px; }
-  .verdict-sub { font-size: 14px; color: var(--muted); }
-  .verdict-sub b { color: var(--text); }
-  .decision.fair { border-color: rgba(62,207,142,.4); } .decision.fair .value { color: var(--green); }
-  .decision.over { border-color: rgba(245,196,81,.4); } .decision.over .value { color: var(--yellow); }
-  .decision.high { border-color: rgba(255,159,67,.4); } .decision.high .value { color: var(--orange); }
-  .decision.vhigh { border-color: rgba(255,107,107,.4); } .decision.vhigh .value { color: var(--red); }
-  .decision.below { border-color: rgba(77,163,255,.4); } .decision.below .value { color: var(--accent); }
-
-  .deal-row { display: flex; justify-content: center; gap: 40px; margin-top: 18px; flex-wrap: wrap; }
-  .deal-row .item .k { font-size: 12px; color: var(--muted); }
-  .deal-row .item .v { font-size: 20px; font-weight: 700; margin-top: 2px; }
-
-  .confidence { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
-  .conf-ring { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 16px;
-    background: conic-gradient(var(--green) calc(var(--pct) * 1%), var(--card2) 0); }
-  .conf-ring span { width: 50px; height: 50px; border-radius: 50%; background: var(--card); display: grid; place-items: center; }
-  .conf-text { text-align: left; font-size: 12px; color: var(--muted); line-height: 1.6; }
   .demo-tag { display: inline-block; background: rgba(245,196,81,.15); color: var(--yellow); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
 
-  .grid { max-width: 680px; margin: 0 auto; }
-  @media (max-width: 900px) { .result-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 780px) { .deal-row { gap: 20px; } }
+  /* Sonuç düzeni */
+  .result-grid { display: grid; grid-template-columns: 1.65fr 1fr; gap: 22px; align-items: start; margin-bottom: 20px; }
+  .result-main { min-width: 0; }
 
+  /* Araç başlık bandı */
+  .vehicle-hero { margin-bottom: 18px; }
+  .back-link { display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 14px; font-weight: 600; }
+  .back-link:hover { color: var(--accent); }
+  .vh-body { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
+  .vh-thumb { width: 120px; height: 80px; border-radius: 12px; overflow: hidden; background: var(--card2);
+    border: 1px solid var(--border); display: grid; place-items: center; flex: none; }
+  .vh-thumb svg { width: 100%; height: 100%; object-fit: cover; }
+  .vh-title { font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .vh-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .spec-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .spec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
+    background: var(--card2); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
+  .spec-chip .ic { font-size: 13px; opacity: .85; }
+  .vh-meta { text-align: right; }
+  .btn-share { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card2);
+    color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+  .btn-share:hover { border-color: var(--accent); color: var(--accent); }
+  .vh-id, .vh-date { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+  .res-title { font-size: 15px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .res-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 16px; line-height: 1.5; }
+
+  /* İlan fiyatı vs hesaplanan rayiç kartları */
+  .decision { border-radius: 16px; padding: 22px; margin-bottom: 0;
+    border: 1px solid var(--border); background: var(--card); }
+  .compare { display: flex; justify-content: center; align-items: stretch; gap: 14px; margin: 0 0 18px; }
+  .cmp-box { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 16px 16px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .cmp-box.askside { border-color: rgba(255,107,107,.3); background: linear-gradient(165deg, rgba(255,107,107,.08), rgba(255,255,255,.01)); }
+  .cmp-box.fairside { border-color: rgba(62,207,142,.3); background: linear-gradient(165deg, rgba(62,207,142,.08), rgba(255,255,255,.01)); }
+  .cmp-box .k { font-size: 11px; letter-spacing: .9px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+  .cmp-box .v.ask { font-size: 34px; font-weight: 800; color: var(--text); line-height: 1.1; }
+  .cmp-box .v.fair { font-size: 34px; font-weight: 800; color: var(--green); line-height: 1.1; }
+  .cmp-box .s { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .cmp-vs { align-self: center; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; display: grid; place-items: center; flex: none;
+    background: var(--card2); }
+  .cmp-badge { margin: 12px 0 0; font-size: 12px; font-weight: 700; border-radius: 10px; padding: 8px 12px;
+    display: block; line-height: 1.5; text-align: left; }
+  .cmp-badge.up { background: rgba(255,107,107,.12); color: var(--red); }
+  .cmp-badge.down { background: rgba(77,163,255,.12); color: var(--accent); }
+  .cmp-badge.honest { background: rgba(62,207,142,.08); color: var(--muted); font-weight: 600; font-size: 11px; border: 1px solid rgba(62,207,142,.2); }
+
+  /* Alt widget satırı */
+  .widget-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .widget { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .widget-h { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+  .widget .val { font-size: 18px; font-weight: 800; color: var(--green); }
+  .widget .sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .widget-soon { opacity: .72; }
+  .widget-soon .soon-lbl { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .5px;
+    color: var(--yellow); background: rgba(245,196,81,.12); border-radius: 4px; padding: 2px 6px; margin-left: 6px; vertical-align: middle; }
+  .widget-advice { grid-column: 1 / -1; background: rgba(245,196,81,.06); border-color: rgba(245,196,81,.22); }
+  .widget-advice .widget-h { color: var(--yellow); }
+  .widget-advice p { font-size: 13px; line-height: 1.65; color: var(--text); }
+  .widget-advice p b { color: var(--text); }
+
+  /* Değerleme özeti paneli */
+  .side-summary { position: sticky; top: 72px; }
+  .side-summary h2 { font-size: 12px; letter-spacing: .8px; }
+  .side-summary .wf-item { font-size: 13px; padding: 10px 0; }
+  .total-box { background: rgba(62,207,142,.06); border: 1px solid rgba(62,207,142,.25); border-radius: 12px;
+    padding: 16px; text-align: center; margin-top: 14px; }
+  .total-box .k { font-size: 11px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  .total-box .v { font-size: 28px; font-weight: 800; color: var(--green); margin-top: 4px; }
+  .side-note { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.65; padding: 12px;
+    background: rgba(77,163,255,.06); border: 1px solid rgba(77,163,255,.15); border-radius: 10px; }
+  .side-note a { color: var(--accent); text-decoration: none; }
+  .verdict-pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 20px;
+    margin: 10px 0 4px; }
+  .verdict-pill.fair { background: rgba(62,207,142,.12); color: var(--green); }
+  .verdict-pill.over { background: rgba(245,196,81,.12); color: var(--yellow); }
+  .verdict-pill.high { background: rgba(255,159,67,.12); color: var(--orange); }
+  .verdict-pill.vhigh { background: rgba(255,107,107,.12); color: var(--red); }
+  .verdict-pill.below { background: rgba(77,163,255,.12); color: var(--accent); }
+  .verdict-row { text-align: center; margin-bottom: 16px; }
+  .verdict-msg { font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: 2px; }
+  .verdict-msg b { color: var(--text); }
+
+  .grid { max-width: 680px; margin: 0 auto; }
+  @media (max-width: 900px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .side-summary { position: static; }
+    .vh-body { grid-template-columns: 1fr; text-align: center; }
+    .vh-thumb { margin: 0 auto; }
+    .spec-chips { justify-content: center; }
+    .vh-meta { text-align: center; }
+    .tb-nav { display: none; }
+    .widget-row { grid-template-columns: 1fr; }
+  }
   label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
   label:first-of-type { margin-top: 0; }
   input, select, textarea { width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; font-family: inherit; }
@@ -251,11 +288,11 @@
     .tab { flex: 1; padding: 13px 8px; font-size: 13px; }
     .card { padding: 16px 14px; }
     .decision { padding: 20px 12px; }
-    .decision .value, .cmp-box .v.ask { font-size: 19px; white-space: nowrap; }
+    .cmp-box .v.ask, .cmp-box .v.fair { font-size: 22px; }
+    .vh-title { font-size: 18px; }
     .compare { gap: 8px; }
     .cmp-box { padding: 12px 8px 10px; }
     .cmp-vs { width: 28px; height: 28px; font-size: 10px; }
-    .deal-row { gap: 14px; }
     .link-bar { flex-direction: column; }
     .coef-grid { grid-template-columns: 1fr; }
     .principles { grid-template-columns: 1fr; }
@@ -271,11 +308,14 @@
     <span class="tb-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#35C58F"/><stop offset="0.65" stop-color="#2D7DD2"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2D7DD2"/><stop offset="1" stop-color="#35C58F"/></linearGradient></defs><rect width="120" height="120" rx="26" fill="#FFFFFF"/><line x1="78" y1="80" x2="94" y2="96" stroke="#1B2A5B" stroke-width="11" stroke-linecap="round"/><g fill="url(#bg)"><rect x="42" y="66" width="6" height="14" rx="1.5"/><rect x="50" y="61" width="6" height="19" rx="1.5"/><rect x="58" y="55" width="6" height="25" rx="1.5"/><rect x="66" y="48" width="6" height="32" rx="1.5"/></g><g stroke="#1B2A5B" fill="none" stroke-linecap="round"><path d="M 74 62 A 18 18 0 1 1 74.5 41" stroke-width="9"/><line x1="40" y1="53" x2="77" y2="45" stroke-width="8"/></g><circle cx="57" cy="56" r="36" fill="none" stroke="url(#rg)" stroke-width="9"/></svg></span>
     <span class="tb-brand">ederi<span>.org</span></span>
     <nav class="tb-nav">
-      <a href="#uygulama">Analiz Et</a>
+      <a href="#uygulama" class="active">Analiz Et</a>
       <a href="#metodoloji">Metodoloji</a>
       <a href="#ilkeler">Hakkımızda</a>
+      <a class="soon" title="Yakında">Fiyat Arşivi</a>
     </nav>
-    <span class="tb-tag">Ederine bak.</span>
+    <div class="tb-actions">
+      <button class="btn-login" title="Yakında — bireysel kullanım her zaman ücretsiz">Giriş Yap</button>
+    </div>
   </div>
 </div>
 
@@ -326,34 +366,60 @@
     </div>
 
     <div class="result-grid">
-      <div class="decision" id="decision">
-        <h3 class="res-title">İlan Fiyatı vs. Hesaplanan Rayiç Değer</h3>
-        <p class="res-sub">Aynı ürün için istenen fiyatla, verilerden hesaplanan rayiç değeri karşılaştırdık.</p>
-        <div class="analyzed" id="analyzedCar"></div>
-        <div class="compare">
-          <div class="cmp-box askside">
-            <div class="k">İlan Fiyatı</div>
-            <div class="v ask" id="askShown">—</div>
-            <div class="s">satıcının belirlediği fiyat</div>
-            <div class="cmp-badge hidden" id="askBadge"></div>
-          </div>
-          <div class="cmp-vs">vs</div>
-          <div class="cmp-box fairside">
-            <div class="k">Hesaplanan Rayiç Değer</div>
-            <div class="value" id="fairValue">—</div>
-            <div class="s">gerçek verilerle hesaplanan eder</div>
-            <div class="cmp-badge conf">🛡 Tahmin güveni %94 <span class="demo-tag">DEMO VERİSİ</span><br>
-              <span id="confDetail">1.247 benzer araç · 382 gerçekleşen satış</span></div>
+      <div class="result-main">
+        <div class="vehicle-hero hidden" id="vehicleHero">
+          <a class="back-link" href="#uygulama">← Yeni analiz</a>
+          <div class="vh-body">
+            <div class="vh-thumb"><svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="120" height="80" fill="none"/><g stroke="#4da3ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><path d="M18 52 L24 38 Q26 33 32 33 L74 33 Q79 33 83 37 L93 46 Q102 48 104 52 L104 56 Q104 58 102 58 L96 58"/><path d="M18 52 Q15 52 15 55 L15 56 Q15 58 18 58 L26 58"/><line x1="44" y1="58" x2="78" y2="58"/><circle cx="35" cy="58" r="7"/><circle cx="87" cy="58" r="7"/><line x1="52" y1="33" x2="52" y2="45"/><path d="M28 45 L96 45"/></g></svg></div>
+            <div>
+              <div class="vh-title" id="vhTitle">Analiz edilen araç</div>
+              <div class="vh-sub" id="vhSub"></div>
+              <div class="spec-chips" id="specChips"></div>
+            </div>
+            <div class="vh-meta">
+              <button class="btn-share" id="btnShare" onclick="shareResult()">Paylaş / Kopyala</button>
+              <div class="vh-date" id="vhDate"></div>
+              <div class="vh-id">🔒 Yerel analiz — sunucuya kayıt yok</div>
+            </div>
           </div>
         </div>
-        <div class="stars" id="stars"></div>
-        <div class="verdict-line" id="verdictLine"></div>
-        <div class="verdict-sub" id="verdictSub"></div>
-        <div class="deal-row" id="dealRow">
-          <div class="item"><div class="k">🎯 Önerilen teklif</div><div class="v" id="offer">—</div></div>
-          <div class="item"><div class="k">Beklenen anlaşma aralığı</div><div class="v" id="dealRange">—</div></div>
+
+        <div class="decision" id="decision">
+          <h3 class="res-title">İlan Fiyatı vs. Hesaplanan Rayiç Değer</h3>
+          <p class="res-sub">Aynı ürün için istenen fiyatla, verilerden hesaplanan rayiç değeri karşılaştırdık.</p>
+          <div class="compare">
+            <div class="cmp-box askside">
+              <div class="k">İlan Fiyatı</div>
+              <div class="v ask" id="askShown">—</div>
+              <div class="s">satıcının belirlediği fiyat</div>
+              <div class="cmp-badge hidden" id="askBadge"></div>
+            </div>
+            <div class="cmp-vs">vs</div>
+            <div class="cmp-box fairside">
+              <div class="k">Hesaplanan Rayiç Değer</div>
+              <div class="v fair" id="fairValue">—</div>
+              <div class="s">kural tabanlı motorla, kırılımıyla hesaplanır</div>
+              <div class="cmp-badge honest">🛡 Güven skoru henüz yayınlanmıyor — motor gerçek satış verisiyle
+                kalibre ediliyor (<span id="confDetail">BETA</span>). Uydurma istatistik göstermeyiz.</div>
+            </div>
+          </div>
+          <div class="verdict-row">
+            <span class="verdict-pill hidden" id="verdictPill"></span>
+            <p class="verdict-msg" id="verdictMsg"></p>
+          </div>
+          <div class="widget-row">
+            <div class="widget"><div class="widget-h">🎯 Önerilen teklif</div><div class="val" id="offer">—</div>
+              <div class="sub">rayiç + %2 pazarlık payı</div></div>
+            <div class="widget"><div class="widget-h">🤝 Beklenen anlaşma aralığı</div><div class="val" id="dealRange">—</div>
+              <div class="sub">rayice yakın gerçekçi kapanış bandı</div></div>
+            <div class="widget widget-advice hidden" id="adviceWidget">
+              <div class="widget-h">💡 Uzman tavsiyesi</div><p id="adviceText"></p></div>
+            <div class="widget widget-soon"><div class="widget-h">📈 Piyasa trendi<span class="soon-lbl">YAKINDA</span></div>
+              <div class="sub">Bu model için fiyat seyri, gerçek ilan ve satış verisi eşiği dolunca burada yayınlanacak.</div></div>
+            <div class="widget widget-soon"><div class="widget-h">📊 Benzer ilanlar<span class="soon-lbl">YAKINDA</span></div>
+              <div class="sub">Emsal ilan karşılaştırması, gerçek veri tabanı devreye girince eklenecek — uydurma emsal göstermeyiz.</div></div>
+          </div>
         </div>
-        <div class="advice hidden" id="advice"></div>
       </div>
 
       <aside class="card side-summary">
@@ -661,15 +727,47 @@ function carNameFromUrl(url) {
   } catch { return ''; }
 }
 
-function analyzedSummary(car) {
-  const parts = [];
+// Araç başlık bandı — analiz edilen aracın kimliği (spec çipleri + tarih)
+function renderHero(car) {
   const name = $('carName').value.trim() || carNameFromUrl($('listingUrl').value.trim());
-  if (name) parts.push('<b>' + name.replace(/</g, '&lt;') + '</b>');
-  if (car.year) parts.push(car.year + ' model');
-  if (car.km) parts.push(car.km.toLocaleString('tr-TR') + ' km');
-  parts.push(car.tramer > 0 ? 'tramer ' + fmt(car.tramer) : 'tramersiz');
-  parts.push((car.painted || car.replaced) ? car.painted + ' boyalı, ' + car.replaced + ' değişen' : 'boyasız/değişensiz');
-  return parts.join(' · ');
+  $('vhTitle').textContent = name || 'Analiz edilen araç';
+  $('vhSub').textContent = name
+    ? 'Kullanıcı beyanına göre analiz'
+    : 'Marka/model girilmedi — Araç Bilgileri formundan ekleyebilirsin';
+  const chips = [];
+  if (car.year) chips.push(['📅', car.year + ' model']);
+  if (car.km) chips.push(['🛣', car.km.toLocaleString('tr-TR') + ' km']);
+  chips.push(['📋', car.tramer > 0 ? 'Tramer ' + fmt(car.tramer) : 'Tramersiz']);
+  chips.push(['🎨', (car.painted || car.replaced)
+    ? car.painted + ' boyalı · ' + car.replaced + ' değişen' : 'Boyasız / değişensiz']);
+  $('specChips').innerHTML = chips.map(([ic, t]) =>
+    `<span class="spec-chip"><span class="ic">${ic}</span>${t}</span>`).join('');
+  $('vhDate').textContent = 'Analiz: ' + new Date().toLocaleDateString('tr-TR');
+  $('vehicleHero').classList.remove('hidden');
+  return name;
+}
+
+let lastResult = null; // Paylaş düğmesi için son analizin özeti
+
+function shareResult() {
+  if (!lastResult) return;
+  let text = 'Ederi analizi — ' + (lastResult.name || 'araç') + ': hesaplanan rayiç ' + fmt(lastResult.fair);
+  if (lastResult.ask > 0) text += ' · ilan ' + fmt(lastResult.ask) + ' (%' + lastResult.gap.toFixed(1) + ' fark)';
+  text += ' — ederi.org';
+  if (navigator.share) { navigator.share({ text }).catch(() => {}); return; }
+  const done = () => {
+    const b = $('btnShare'); b.textContent = 'Kopyalandı ✓';
+    setTimeout(() => { b.textContent = 'Paylaş / Kopyala'; }, 1800);
+  };
+  const fallback = () => { // clipboard API yoksa/reddedildiyse gizli textarea ile kopyala
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch {}
+    ta.remove();
+  };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
 }
 
 function calc() {
@@ -681,16 +779,16 @@ function calc() {
   if (!car.newPrice) {
     $('fairValue').textContent = '—';
     $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
-    $('analyzedCar').innerHTML = '';
+    $('vehicleHero').classList.add('hidden');
     $('askBadge').classList.add('hidden');
-    $('advice').classList.add('hidden');
-    $('stars').textContent = '';
-    $('decision').className = 'decision';
-    $('verdictLine').textContent = 'Sıfır muadil fiyatı gerekli';
-    $('verdictSub').innerHTML = 'Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır. Aşağıdan hazır çapa seç ya da elle gir — ilanda yazmaz, bu yüzden soruyoruz.';
-    $('dealRow').style.display = 'none';
+    $('adviceWidget').classList.add('hidden');
+    $('verdictPill').classList.add('hidden');
+    $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır. Aşağıdan hazır çapa seç ya da elle gir — ilanda yazmaz, bu yüzden soruyoruz.';
+    $('offer').textContent = '—';
+    $('dealRange').textContent = '—';
     $('waterfall').innerHTML = '';
     $('sideTotal').textContent = '—';
+    lastResult = null;
     return;
   }
 
@@ -698,26 +796,26 @@ function calc() {
 
   $('fairValue').textContent = fmt(r.fair);
   $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
-  $('analyzedCar').innerHTML = r.fair > 0 ? analyzedSummary(car) : '';
-  const box = $('decision');
-  box.className = 'decision';
+  const heroName = r.fair > 0 ? renderHero(car) : null;
+  if (r.fair <= 0) $('vehicleHero').classList.add('hidden');
 
   if (askPrice > 0 && r.fair > 0) {
     const gap = (askPrice - r.fair) / r.fair * 100;
     const diff = askPrice - r.fair;
     const [cls, verdict] = gapClass(gap);
-    const stars = cls==='below'||cls==='fair' ? 5 : cls==='over' ? 3 : cls==='high' ? 2 : 1;
+    lastResult = { name: heroName, ask: askPrice, fair: r.fair, gap };
 
-    box.classList.add(cls);
     const badge = $('askBadge');
     badge.classList.remove('hidden', 'up', 'down');
     badge.classList.add(diff >= 0 ? 'up' : 'down');
     badge.innerHTML = diff >= 0
       ? `▲ %${gap.toFixed(1)} rayicin üzerinde · ${fmt(Math.abs(diff))} fazla`
       : `▼ %${Math.abs(gap).toFixed(1)} rayicin altında · ${fmt(Math.abs(diff))} düşük`;
-    $('stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
-    $('verdictLine').textContent = verdict;
-    $('verdictSub').innerHTML = gap >= 0
+
+    const pill = $('verdictPill');
+    pill.className = 'verdict-pill ' + cls;
+    pill.textContent = verdict;
+    $('verdictMsg').innerHTML = gap >= 0
       ? `Tahmini rayiç değerin <b>%${gap.toFixed(0)}</b> üzerinde — yaklaşık <b>${fmt(Math.abs(diff))}</b> fazla fiyatlandırılmış.`
       : `Tahmini rayiç değerin <b>%${Math.abs(gap).toFixed(0)}</b> altında — sebebini araştırmakta fayda var.`;
 
@@ -726,23 +824,22 @@ function calc() {
     $('dealRange').textContent = gap > 2
       ? `${fmt(r.fair*1.02)} – ${fmt(Math.min(r.fair*1.08, askPrice))}`
       : fmt(askPrice);
-    $('dealRow').style.display = '';
 
-    const adv = $('advice');
-    adv.classList.remove('hidden');
     let advText;
     if (gap > 25)      advText = `İlan fiyatı rayicin çok üzerinde. Bu makasta pazarlık genelde yetmez — <b>${fmt(offer)}</b> civarı bir teklifle başlayıp gerekirse vazgeçmeye hazır olun; benzer araçların ilanlarını emsal olarak gösterin.`;
     else if (gap > 10) advText = `İlan fiyatı rayicin üzerinde. <b>${fmt(offer)}</b> civarı bir teklif makul olacaktır; tramer ve ekspertiz kayıtlarını pazarlık kozu olarak kullanın.`;
     else if (gap >= -5) advText = `Fiyat hesaplanan rayice yakın — adil bir ilan. Küçük bir pazarlık payı deneyin (<b>${fmt(offer)}</b>), ama aracı kaçırmamak öncelikliyse fiyat savunulabilir.`;
     else               advText = `İstenen fiyat rayicin belirgin altında — fırsat olabilir, ama <b>sebebini mutlaka araştırın</b>: SBM tramer sorgusu, bağımsız ekspertiz ve borç/rehin kontrolü yapmadan karar vermeyin.`;
-    adv.innerHTML = '<span class="t">💡 Uzman tavsiyesi</span>' + advText;
+    $('adviceText').innerHTML = advText;
+    $('adviceWidget').classList.remove('hidden');
   } else {
+    lastResult = r.fair > 0 ? { name: heroName, ask: 0, fair: r.fair, gap: 0 } : null;
     $('askBadge').classList.add('hidden');
-    $('advice').classList.add('hidden');
-    $('stars').textContent = '';
-    $('verdictLine').textContent = 'İlan fiyatı girilmedi';
-    $('verdictSub').textContent = 'Karşılaştırma için ilan fiyatını girin.';
-    $('dealRow').style.display = 'none';
+    $('adviceWidget').classList.add('hidden');
+    $('verdictPill').classList.add('hidden');
+    $('verdictMsg').textContent = 'Karşılaştırma için ilan fiyatını girin.';
+    $('offer').textContent = '—';
+    $('dealRange').textContent = '—';
   }
 
   const totalAdj = r.fair - car.newPrice;
@@ -767,7 +864,7 @@ function mockAnalyze() {
   $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
   $('askPrice').value = 1250000;
   calc();
-  $('confDetail').textContent = 'İlan çözümlendi (demo) · 1.247 benzer araç · 382 gerçekleşen satış';
+  $('confDetail').textContent = 'BETA · örnek ilanla dolduruldu';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -977,7 +1074,7 @@ function applyOcr() {
   autoAnchor($('carName').value); // isimden çapayı sistem bulur; bulamazsa açıkça söyler
   calc();
   $('ocrConfirm').classList.add('hidden');
-  $('confDetail').textContent = 'Görüntüden okundu, kullanıcı onayladı · OCR tarayıcıda çalıştı';
+  $('confDetail').textContent = 'BETA · görüntüden okundu, kullanıcı onayladı';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

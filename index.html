@@ -104,9 +104,6 @@
     background: var(--card2); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
   .spec-chip .ic { font-size: 13px; opacity: .85; }
   .vh-meta { text-align: right; }
-  .btn-share { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card2);
-    color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
-  .btn-share:hover { border-color: var(--accent); color: var(--accent); }
   .vh-id, .vh-date { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
   .res-title { font-size: 15px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
@@ -133,8 +130,55 @@
   .cmp-badge.down { background: rgba(77,163,255,.12); color: var(--accent); }
   .cmp-badge.honest { background: rgba(62,207,142,.08); color: var(--muted); font-weight: 600; font-size: 11px; border: 1px solid rgba(62,207,142,.2); }
 
+  /* Sonuç başlık şeridi */
+  .result-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .rh-ic { width: 34px; height: 34px; border-radius: 50%; background: rgba(62,207,142,.12); color: var(--green);
+    display: grid; place-items: center; font-size: 15px; font-weight: 800; flex: none; }
+  .rh-t { font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
+  .rh-s { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .rh-actions { margin-left: auto; display: flex; gap: 8px; }
+  .rh-btn { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card2);
+    color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .rh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Fark bandı — ilan fiyatı ile rayiç arasındaki makas */
+  .gap-band { display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    border-radius: 12px; padding: 12px 16px; margin: 0 0 16px; font-weight: 800; font-size: 15px; }
+  .gap-band .r { font-size: 12px; font-weight: 700; opacity: .9; }
+  .gap-band.up { background: rgba(255,107,107,.12); color: var(--red); border: 1px solid rgba(255,107,107,.25); }
+  .gap-band.down { background: rgba(77,163,255,.12); color: var(--accent); border: 1px solid rgba(77,163,255,.25); }
+
+  /* Kalibrasyon ringi — GERÇEK sayaç, uydurma güven skoru değil */
+  .widget-ring { display: flex; gap: 12px; align-items: center; }
+  .conf-ring { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: conic-gradient(var(--green) calc(var(--pct) * 1%), var(--card2) 0); }
+  .conf-ring span { width: 44px; height: 44px; border-radius: 50%; background: var(--card); display: grid;
+    place-items: center; font-weight: 800; font-size: 10.5px; color: var(--green); }
+
+  .wf-exp { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; font-weight: 400; }
+
+  /* Güven şeridi */
+  .trust-strip { max-width: 1180px; margin: 26px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .trust { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px; }
+  .trust .ic { width: 36px; height: 36px; border-radius: 10px; background: rgba(77,163,255,.1); display: grid;
+    place-items: center; font-size: 17px; flex: none; }
+  .trust b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .trust p { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .result-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 14px; }
+
+  /* Yazdırma / PDF İndir — sadece sonuç alanı, açık zemin */
+  @media print {
+    :root { --bg: #fff; --card: #fff; --card2: #f2f5f9; --text: #111; --muted: #555; --border: #ccc; }
+    body { background: #fff; }
+    .topbar, .hero, .assets, .tabs, .beta-note, .ocr-card, .grid, .site-footer, .trust-strip,
+    .back-link, .rh-actions, #modeBud { display: none !important; }
+    .result-grid { grid-template-columns: 1fr; gap: 12px; }
+    .side-summary { position: static; }
+  }
+
   /* Alt widget satırı */
-  .widget-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .widget-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
   .widget { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
   .widget-h { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
   .widget .val { font-size: 18px; font-weight: 800; color: var(--green); }
@@ -196,6 +240,11 @@
   details { margin-top: 18px; }
   summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; }
   summary:hover { color: var(--accent); }
+  .seg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seg-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card2);
+    color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .seg-btn:hover { border-color: var(--accent); color: var(--text); }
+  .seg-btn.active { border-color: var(--accent); background: rgba(77,163,255,.12); color: var(--text); }
   .coef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
   .coef-grid label { margin: 0 0 3px; font-size: 12px; }
   .coef-grid input { padding: 7px 10px; font-size: 13px; }
@@ -340,7 +389,7 @@
     <button class="tab active" id="tabVal" onclick="switchTab('val')">🔍 Değerle</button>
     <button class="tab" id="tabBud" onclick="switchTab('bud')">💰 Bütçeme Ne Uygun?</button>
   </div>
-  <p class="beta-note"><b>BETA</b> — motor gerçek satış verisiyle kalibre ediliyor; sonuçlar temsilidir.</p>
+  <p class="beta-note"><b>BETA v0.9</b> — motor gerçek satış verisiyle kalibre ediliyor; sonuçlar temsilidir.</p>
 
   <!-- ================= DEĞERLEME MODU ================= -->
   <div id="modeVal">
@@ -367,6 +416,14 @@
 
     <div class="result-grid">
       <div class="result-main">
+        <div class="result-head hidden" id="resultHead">
+          <div class="rh-ic">✓</div>
+          <div><div class="rh-t">Analiz Sonucu</div><div class="rh-s" id="rhTime">—</div></div>
+          <div class="rh-actions">
+            <button class="rh-btn" id="btnShare" onclick="shareResult()">🔗 Paylaş</button>
+            <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
+          </div>
+        </div>
         <div class="vehicle-hero hidden" id="vehicleHero">
           <a class="back-link" href="#uygulama">← Yeni analiz</a>
           <div class="vh-body">
@@ -377,7 +434,6 @@
               <div class="spec-chips" id="specChips"></div>
             </div>
             <div class="vh-meta">
-              <button class="btn-share" id="btnShare" onclick="shareResult()">Paylaş / Kopyala</button>
               <div class="vh-date" id="vhDate"></div>
               <div class="vh-id">🔒 Yerel analiz — sunucuya kayıt yok</div>
             </div>
@@ -392,7 +448,6 @@
               <div class="k">İlan Fiyatı</div>
               <div class="v ask" id="askShown">—</div>
               <div class="s">satıcının belirlediği fiyat</div>
-              <div class="cmp-badge hidden" id="askBadge"></div>
             </div>
             <div class="cmp-vs">vs</div>
             <div class="cmp-box fairside">
@@ -403,6 +458,9 @@
                 kalibre ediliyor (<span id="confDetail">BETA</span>). Uydurma istatistik göstermeyiz.</div>
             </div>
           </div>
+          <div class="gap-band hidden" id="gapBand">
+            <span id="gapMain"></span><span class="r" id="gapPct"></span>
+          </div>
           <div class="verdict-row">
             <span class="verdict-pill hidden" id="verdictPill"></span>
             <p class="verdict-msg" id="verdictMsg"></p>
@@ -410,6 +468,11 @@
           <div class="widget-row">
             <div class="widget"><div class="widget-h">🎯 Önerilen teklif</div><div class="val" id="offer">—</div>
               <div class="sub">rayiç + %2 pazarlık payı</div></div>
+            <div class="widget"><div class="widget-h">🛡 Kalibrasyon Durumu</div>
+              <div class="widget-ring">
+                <div class="conf-ring" id="calibRing"><span id="calibCount">—</span></div>
+                <div class="sub" id="calibText"></div>
+              </div></div>
             <div class="widget"><div class="widget-h">🤝 Beklenen anlaşma aralığı</div><div class="val" id="dealRange">—</div>
               <div class="sub">rayice yakın gerçekçi kapanış bandı</div></div>
             <div class="widget widget-advice hidden" id="adviceWidget">
@@ -439,6 +502,14 @@
         <h2>Araç Bilgileri</h2>
         <label>Marka / Model (isteğe bağlı — sonuç kartında görünür)</label>
         <input type="text" id="carName" placeholder="Örn: Toyota Avensis 1.6 Elegant">
+        <label>Segment profili — <span class="wf-note">yalnızca aşağıdaki katsayı varsayılanlarını değiştirir, hepsi görünür ve düzenlenebilir kalır</span></label>
+        <div class="seg-row">
+          <button type="button" class="seg-btn active" data-seg="binek" onclick="setSegment('binek')">🚗 Binek (C/D)</button>
+          <button type="button" class="seg-btn" data-seg="premium" onclick="setSegment('premium')">💎 Premium / Lüks</button>
+          <button type="button" class="seg-btn" data-seg="ticari" onclick="setSegment('ticari')">🚚 Ticari / Filo</button>
+          <button type="button" class="seg-btn" data-seg="ev" onclick="setSegment('ev')">⚡ Elektrikli</button>
+        </div>
+        <p class="link-note" id="segNote" style="margin-top:6px">Ana akım binek (C/D — Egea, Megane, Passat…). Kalibrasyon bu segmentte yürüyor.</p>
         <label>Sıfır muadil fiyatı (bugünkü, TL) — <b style="color:var(--yellow)">eder bu çapaya dayanır</b></label>
         <select id="anchorSelect">
           <option value="">Hazır çapa seç (Temmuz 2026 liste fiyatları) ya da aşağıya elle gir…</option>
@@ -727,6 +798,35 @@ function carNameFromUrl(url) {
   } catch { return ''; }
 }
 
+// Segment profilleri — motor çekirdeği segment bilmez; profil yalnızca katsayı
+// varsayılanlarını değiştirir (şeffaflık panelinde görünür ve düzenlenebilir kalır).
+// Kaynak: 17.07.2026 danışman değerlendirmesi + GERÇEK-7 lüks EV bulgusu.
+// Yalnızca 'binek' gerçek ilanlarla kalibre ediliyor; diğerleri uzman varsayımıdır.
+const SEGMENTS = {
+  binek:   { label: 'Binek C/D',
+             coef: { depY1: 15, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3 },
+             note: 'Ana akım binek (C/D — Egea, Megane, Passat…). Kalibrasyon bu segmentte yürüyor.' },
+  premium: { label: 'Premium/Lüks',
+             coef: { depY1: 22, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 3, replacePen: 6 },
+             note: 'E/F segmenti (BMW 5, Mercedes E/S…): ilk yıl kaybı daha dik, hasar hassasiyeti yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı, sonucu temkinli yorumla.' },
+  ticari:  { label: 'Ticari/Filo',
+             coef: { depY1: 12, depY2: 8.5, depY6: 6, normKm: 30000, paintPen: 1, replacePen: 2 },
+             note: 'Hafif ticari / filo (Courier, Doblo…): km normu 30.000/yıl, hasar toleransı yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı.' },
+  ev:      { label: 'Elektrikli',
+             coef: { depY1: 20, depY2: 12, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3 },
+             note: 'Elektrikli: teknolojik eskime ve batarya sağlığı eğriyi dikleştirir (lüks EV vakasında 1. yıl ~%30-35 ölçtük). En az kalibre profil — sonucu temkinli yorumla.' },
+};
+let activeSegment = 'binek';
+
+function setSegment(key) {
+  activeSegment = key;
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.seg === key));
+  const seg = SEGMENTS[key];
+  Object.entries(seg.coef).forEach(([id, v]) => { $(id).value = v; });
+  $('segNote').textContent = seg.note;
+  calc();
+}
+
 // Araç başlık bandı — analiz edilen aracın kimliği (spec çipleri + tarih)
 function renderHero(car) {
   const name = $('carName').value.trim() || carNameFromUrl($('listingUrl').value.trim());
@@ -740,6 +840,8 @@ function renderHero(car) {
   chips.push(['📋', car.tramer > 0 ? 'Tramer ' + fmt(car.tramer) : 'Tramersiz']);
   chips.push(['🎨', (car.painted || car.replaced)
     ? car.painted + ' boyalı · ' + car.replaced + ' değişen' : 'Boyasız / değişensiz']);
+  chips.push(['🏷', SEGMENTS[activeSegment].label + ' profili'
+    + (activeSegment === 'binek' ? '' : ' (varsayım)')]);
   $('specChips').innerHTML = chips.map(([ic, t]) =>
     `<span class="spec-chip"><span class="ic">${ic}</span>${t}</span>`).join('');
   $('vhDate').textContent = 'Analiz: ' + new Date().toLocaleDateString('tr-TR');
@@ -757,7 +859,7 @@ function shareResult() {
   if (navigator.share) { navigator.share({ text }).catch(() => {}); return; }
   const done = () => {
     const b = $('btnShare'); b.textContent = 'Kopyalandı ✓';
-    setTimeout(() => { b.textContent = 'Paylaş / Kopyala'; }, 1800);
+    setTimeout(() => { b.textContent = '🔗 Paylaş'; }, 1800);
   };
   const fallback = () => { // clipboard API yoksa/reddedildiyse gizli textarea ile kopyala
     const ta = document.createElement('textarea');
@@ -780,7 +882,8 @@ function calc() {
     $('fairValue').textContent = '—';
     $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
     $('vehicleHero').classList.add('hidden');
-    $('askBadge').classList.add('hidden');
+    $('resultHead').classList.add('hidden');
+    $('gapBand').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
     $('verdictPill').classList.add('hidden');
     $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır. Aşağıdan hazır çapa seç ya da elle gir — ilanda yazmaz, bu yüzden soruyoruz.';
@@ -797,7 +900,14 @@ function calc() {
   $('fairValue').textContent = fmt(r.fair);
   $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
   const heroName = r.fair > 0 ? renderHero(car) : null;
-  if (r.fair <= 0) $('vehicleHero').classList.add('hidden');
+  if (r.fair > 0) {
+    $('resultHead').classList.remove('hidden');
+    $('rhTime').textContent = 'Analiz tamamlandı · '
+      + new Date().toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+  } else {
+    $('vehicleHero').classList.add('hidden');
+    $('resultHead').classList.add('hidden');
+  }
 
   if (askPrice > 0 && r.fair > 0) {
     const gap = (askPrice - r.fair) / r.fair * 100;
@@ -805,12 +915,15 @@ function calc() {
     const [cls, verdict] = gapClass(gap);
     lastResult = { name: heroName, ask: askPrice, fair: r.fair, gap };
 
-    const badge = $('askBadge');
-    badge.classList.remove('hidden', 'up', 'down');
-    badge.classList.add(diff >= 0 ? 'up' : 'down');
-    badge.innerHTML = diff >= 0
-      ? `▲ %${gap.toFixed(1)} rayicin üzerinde · ${fmt(Math.abs(diff))} fazla`
-      : `▼ %${Math.abs(gap).toFixed(1)} rayicin altında · ${fmt(Math.abs(diff))} düşük`;
+    const band = $('gapBand');
+    band.classList.remove('hidden', 'up', 'down');
+    band.classList.add(diff >= 0 ? 'up' : 'down');
+    $('gapMain').textContent = diff >= 0
+      ? `▲ +${fmt(Math.abs(diff))} fazla`
+      : `▼ −${fmt(Math.abs(diff))} düşük`;
+    $('gapPct').textContent = diff >= 0
+      ? `Piyasa rayicinin %${gap.toFixed(1)} üzerinde`
+      : `Piyasa rayicinin %${Math.abs(gap).toFixed(1)} altında`;
 
     const pill = $('verdictPill');
     pill.className = 'verdict-pill ' + cls;
@@ -834,7 +947,7 @@ function calc() {
     $('adviceWidget').classList.remove('hidden');
   } else {
     lastResult = r.fair > 0 ? { name: heroName, ask: 0, fair: r.fair, gap: 0 } : null;
-    $('askBadge').classList.add('hidden');
+    $('gapBand').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
     $('verdictPill').classList.add('hidden');
     $('verdictMsg').textContent = 'Karşılaştırma için ilan fiyatını girin.';
@@ -844,18 +957,22 @@ function calc() {
 
   const totalAdj = r.fair - car.newPrice;
   const wf = [
-    ['Sıfır muadil fiyat', fmt(car.newPrice), ''],
-    [`🕐 Yaş etkisi (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg'],
+    ['Sıfır muadil fiyat', fmt(car.newPrice), '', 'Bugünkü liste fiyatı — ederin çapası'],
+    [`🕐 Yaş etkisi (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg',
+      'Bileşik amortisman; ilk yıl en dik, sonra yumuşar'],
     [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${r.expectedKm.toLocaleString('tr-TR')})</span>`,
-      (r.kmAdj>=0?'+':'−') + fmt(Math.abs(r.kmAdj)), r.kmAdj>=0?'pos':'neg'],
+      (r.kmAdj>=0?'+':'−') + fmt(Math.abs(r.kmAdj)), r.kmAdj>=0?'pos':'neg',
+      'Beklenen km\'den sapmaya göre ceza ya da sınırlı prim'],
     [`📋 Tramer etkisi <span class="wf-note">(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(r.tramerPct).toFixed(1)})</span>`,
-      '−' + fmt(Math.abs(r.tramerDed)), 'neg'],
+      '−' + fmt(Math.abs(r.tramerDed)), 'neg',
+      'Doyumlu eğri: hasar oranı büyüdükçe ek etkisi azalır'],
     [`🎨 Kaporta / boya <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
-      '−' + fmt(Math.abs(r.bodyDed)), 'neg'],
-    ['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total'],
+      '−' + fmt(Math.abs(r.bodyDed)), 'neg',
+      'Parça başına sabit düşüm, segment profiline göre'],
+    ['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total', ''],
   ];
-  $('waterfall').innerHTML = wf.map(([l,v,c]) =>
-    `<div class="wf-item"><span>${l}</span><span class="${c}">${v}</span></div>`).join('');
+  $('waterfall').innerHTML = wf.map(([l,v,c,e]) =>
+    `<div class="wf-item"><span>${l}${e ? `<span class="wf-exp">${e}</span>` : ''}</span><span class="${c}">${v}</span></div>`).join('');
   $('sideTotal').textContent = fmt(r.fair);
 }
 
@@ -1172,11 +1289,28 @@ $('listingUrl').addEventListener('change', () => {
   if (!$('carName').value.trim()) autoAnchor(carNameFromUrl($('listingUrl').value.trim()));
 });
 
+// Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
+// Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
+const CALIB = { count: 10, target: 100 };
+$('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
+$('calibCount').textContent = CALIB.count + '/' + CALIB.target;
+$('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanacak. Uydurma skor göstermeyiz.';
+
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
  'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']
   .forEach(id => $(id).addEventListener('input', calc));
 calc();
 </script>
+
+<div class="trust-strip">
+  <div class="trust"><div class="ic">⚖️</div><div><b>Tarafsız</b>
+    <p>Hiçbir ilan sitesi, galeri veya satıcıdan gelir almayız — tarafsızlık varoluş sebebimiz.</p></div></div>
+  <div class="trust"><div class="ic">🔍</div><div><b>Şeffaf</b>
+    <p>Her değer kalem kalem gerekçesiyle gösterilir; katsayılar açık ve düzenlenebilir — kara kutu yok.</p></div></div>
+  <div class="trust"><div class="ic">🛡</div><div><b>Dürüst</b>
+    <p>Gerçek veri yoksa gösterge de yok: güven skoru ve piyasa trendi, veri eşiği dolunca yayınlanır.</p></div></div>
+</div>
+<p class="result-note">* Hesaplanan rayiç değer bir tahmindir; kesin değer için bağımsız ekspertiz önerilir.</p>
 
 <div class="site-footer">
   <b style="color:var(--text)">ederi.org</b> — yapay zekâ destekli adil piyasa değeri platformu. Bağımsız, şeffaf, kamuya hizmet.<br>

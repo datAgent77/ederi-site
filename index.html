@@ -627,7 +627,7 @@
 
   <footer>
     🔒 Tüm hesaplamalar şeffaf metodolojiyle yapılır. Satıcılardan komisyon veya reklam ücreti alınmaz.<br>
-    Ederi · Prototip v8 — rayiç karşılaştırma arayüzü; görüntüden analiz (tarayıcı-içi OCR); tramer ve kilometre etkileri doğrusal değildir (doyumlu eğriler).
+    Ederi · Prototip v9 — rayiç karşılaştırma arayüzü; görüntüden ve metinden analiz (tarayıcı-içi OCR, çok kaynaklı birleştirme); tramer ve kilometre etkileri doğrusal değildir (doyumlu eğriler).
     Katsayılar başlangıç kabulüdür; gerçek üründe gerçekleşen satış verisinden öğrenilir.<br>
     Güven skoru ve bütçe modu ilan listesi temsilidir.
   </footer>
@@ -1184,12 +1184,15 @@ function carNameFromText(text) {
     const t = w.replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+|[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+$/g, '');
     if (!t) continue;
     if (((t.match(/[0-9A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length) / t.length < 0.7) continue;
-    if (t.length === 1 && !/\d/.test(t)) continue; // tek harf artığı ("A « &«& ©" vakası)
+    // Tek harf artığı ("A « &«& ©" vakası) elenir — AMA ardından 2-3 haneli sayı gelen
+    // tek harf sınıf adıdır, kalır: "Mercedes C 180", "BMW 3 20i" (GERÇEK Mercedes vakası)
+    if (t.length === 1 && !/\d/.test(t)
+        && !/^\d{2,3}$/.test((rest[rest.indexOf(w) + 1] || '').replace(/[^\d]/g, ''))) continue;
     // Atla: başlık süsleri — model adı değildir (HATASIZ-BOYASIZ, CAM TAVAN, ACİL…)
     if (/^(hatas[ıi]z(-boyas[ıi]z)?|boyas[ıi]z|tramersiz|de[ğg]i[şs]ensiz|temiz|acil|orj?[iı]?nal|full|cam|tavan|sunroof|emsalsiz|bak[ıi]ml[ıi])$/i.test(t)) continue;
     // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
     if (/^(19|20)\d{2}$/.test(t) || /^(km|tl|₺)\.?,?$/i.test(t) || /[\d.](km|tl)$/i.test(t) || /^[\d.,]{4,}$/.test(t)
-        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer)$/i.test(t)) break;
+        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer|arac[ıi]m(?:[ıi]n)?|anahtar.*|kitap[çc].*|mevcut.*|garantili|ekspertiz.*|yedek|özellikler)$/i.test(t)) break;
     // "108 KM" gibi sayı+birim ikilisinde sayı model adına sızmasın (GERÇEK vaka: "TFSI 108")
     const next = rest[rest.indexOf(w) + 1] || '';
     if (/^\d{1,3}$/.test(t) && /^(km|tl|₺)/i.test(next.replace(/^[^A-Za-z₺]+/, ''))) break;
@@ -1221,7 +1224,11 @@ function ocrExtract(text) {
   // km "108" okununca eder tamamen çarpılıyordu. <1.000 tek aday varsa ×1.000 önerilir ve işaretlenir.
   out._flags = {};
   const kmCands = [...flat.matchAll(new RegExp(NUM + '\\s*km\\b', 'gi'))].map(m => m[1]);
-  const kmLabeled = grab(['kilometre', 'km'], NUM);
+  // "km" ETİKET olarak ancak önünde sayı yokken geçerli — "161.000 km 1.235.000 TL" diziliminde
+  // etiket sanılan "km" bir SONRAKİ sayıyı (fiyatı/yılı) yutuyordu (test bulgusu, 18.07.2026)
+  const kmL = flat.match(/kilometre[\s:]*([\d.,]{2,})/i)
+    || flat.match(/(?<![\d.,])(?<![\d.,]\s)\bkm\b[\s:]*([\d.,]{2,})/i);
+  const kmLabeled = kmL ? kmL[1] : null;
   if (kmLabeled != null) kmCands.push(kmLabeled);
   const kmVals = kmCands.map(trNum).filter(v => !isNaN(v) && v !== out.year && v > 0 && v <= 2000000);
   if (kmVals.length) {
@@ -1235,12 +1242,31 @@ function ocrExtract(text) {
         + (kmVals[0] * 1000).toLocaleString('tr-TR') + ' km demektir; öyle doldurduk, kontrol et.';
     }
   }
-  // İlan fiyatı: etiketli öncelikli, yoksa en büyük TL/₺ tutarı
+  // Tramer FİYATTAN ÖNCE çıkarılır ki tutarı fiyat sanılmasın (GERÇEK Mercedes vakası:
+  // fiyatı yazılmamış ilanda "TRAMER : ... 59.897 TL" fiyat olarak okunuyordu).
+  const yearLike = v => v >= 1990 && v <= 2030; // yıl görünümlü sayı tutar olamaz
+  if (/tramersiz|tramer\s*(?:kayd[ıi])?\s*:?\s*yok|hasar\s*(?:kayd[ıi])?\s*:?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
+  else {
+    const tr = grab(['tramer\\s*(?:kayd[ıi]|tutar[ıi]|toplam[ıi])?', 'hasar\\s*(?:kayd[ıi]|tutar[ıi]|bedeli)'], NUM);
+    let v = tr != null ? trNum(tr) : NaN;
+    if (isNaN(v) || yearLike(v)) {
+      // Etiketle tutar arasına söz girebilir: "TRAMER : SİGORTA ŞİŞİRMESİ ... 2022 YILINDAN
+      // 59.897 TL MEVCUT" (GERÇEK vaka) — etiket sonrası dar pencerede TL'li tutarı ara.
+      const li = flat.search(/tramer|hasar\s*kayd[ıi]/i);
+      if (li >= 0) {
+        const win = flat.slice(li, li + 90);
+        const wm = !/fiyat/i.test(win) && win.match(/([\d.,]{4,})\s*(?:TL|₺)/i);
+        if (wm) v = trNum(wm[1]);
+      }
+    }
+    if (!isNaN(v) && v > 0 && !yearLike(v)) out.tramer = v;
+  }
+  // İlan fiyatı: etiketli öncelikli, yoksa en büyük TL/₺ tutarı (tramer/km tutarları hariç)
   let ask = grab(['sat[ıi][şs] fiyat[ıi]', 'ilan fiyat[ıi]', 'fiyat'], NUM + '\\s*(?:TL|₺)');
   if (ask != null) ask = trNum(ask);
   else {
     const amounts = [...flat.matchAll(new RegExp(NUM + '\\s*(?:TL|₺)', 'gi'))]
-      .map(m => trNum(m[1])).filter(n => n > 50000);
+      .map(m => trNum(m[1])).filter(n => n > 50000 && n !== out.tramer && n !== out.km);
     if (amounts.length) ask = Math.max(...amounts);
   }
   if (!ask) {
@@ -1259,33 +1285,28 @@ function ocrExtract(text) {
     if (ask < 100000 || ask > 50000000)
       out._flags.ask = 'Okunan ilan fiyatı (' + ask.toLocaleString('tr-TR') + ' TL) olağan aralığın dışında — OCR baştaki haneyi düşürmüş olabilir, kontrol et.';
   }
-  // Tramer: "tramersiz / hasar kaydı yok" → 0, yoksa etiketli tutar
-  if (/tramersiz|tramer\s*(?:kayd[ıi])?\s*yok|hasar\s*(?:kayd[ıi])?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
+  // Kaporta: AÇIK SAYI BEYANI sıfır iddiasını YENER — Türk ilan dili "1 değişen 1 lokal boya
+  // mevcut, HARİCİ hatasız-boyasız-değişensiz" der (GERÇEK vaka). Önce sayıya bak, sonra iddiaya.
+  // "boyalı" + OCR bozulmaları (boyali/boyalh/boyal1) + ekspertiz yazımı "N PARÇA BOYA"
+  const BOYALI = '(?:boya[l1][ıih1!|l]?|boya\\b)';
+  const hits = [...flat.matchAll(new RegExp('(\\d{1,2})\\s*(?:adet\\s*)?(?:par[çc]a\\s*)?(?:lokal\\s*)?' + BOYALI, 'gi'))];
+  if (hits.length) out.painted = hits.reduce((s, h) => s + parseInt(h[1], 10), 0);
   else {
-    const tr = grab(['tramer\\s*(?:kayd[ıi]|tutar[ıi]|toplam[ıi])?', 'hasar\\s*(?:kayd[ıi]|tutar[ıi]|bedeli)'], NUM);
-    if (tr != null) { const v = trNum(tr); if (!isNaN(v) && v !== out.year) out.tramer = v; }
+    const b = flat.match(new RegExp(BOYALI + '(?:\\s*par[çc]a)?(?:\\s*say[ıi]s[ıi])?\\s*:?\\s*(\\d{1,2})\\b', 'i'));
+    if (b) out.painted = parseInt(b[1], 10);
+    else if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
   }
-  // Kaporta: boyasız/değişensiz → 0; "1 boyalı, 3 lokal boyalı" → toplanır (arabam.com kalıbı)
-  if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
-  else {
-    // "boyalı" + OCR bozulmaları (boyali/boyalh/boyal1) + ekspertiz yazımı "N PARÇA BOYA"
-    const BOYALI = '(?:boya[l1][ıih1!|l]?|boya\\b)';
-    const hits = [...flat.matchAll(new RegExp('(\\d{1,2})\\s*(?:adet\\s*)?(?:par[çc]a\\s*)?(?:lokal\\s*)?' + BOYALI, 'gi'))];
-    if (hits.length) out.painted = hits.reduce((s, h) => s + parseInt(h[1], 10), 0);
-    else {
-      const b = flat.match(new RegExp(BOYALI + '(?:\\s*par[çc]a)?(?:\\s*say[ıi]s[ıi])?\\s*:?\\s*(\\d{1,2})\\b', 'i'));
-      if (b) out.painted = parseInt(b[1], 10);
-    }
-  }
-  if (/de[ğg]i[şs]ensiz|de[ğg]i[şs]en\s*(?:par[çc]a\s*)?(?:ve\s*)?(?:tramer\s*)?yok/i.test(flat)) out.replaced = 0;
-  else {
-    const d = flat.match(/(?<!:)(?<!:\s)\b(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i)
-      || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b(?!\s*(?:lokal\s*)?boyal)/i);
-    if (d) out.replaced = parseInt(d[1], 10);
-  }
-  // Ağır hasar (pert) kaydı: sahibinden/arabam ilanlarında standart alan
-  const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:l[ıi])?(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i);
-  if (hv) out.heavy = /evet|var/i.test(hv[1]) ? 'yes' : 'no';
+  const d = flat.match(/(?<!:)(?<!:\s)\b(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i)
+    || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b(?!\s*(?:lokal\s*)?boyal)/i);
+  if (d) out.replaced = parseInt(d[1], 10);
+  else if (/de[ğg]i[şs]ensiz|de[ğg]i[şs]en\s*:?\s*(?:par[çc]a\s*)?(?:ve\s*)?(?:tramer\s*)?yok/i.test(flat)) out.replaced = 0;
+  // Ağır hasar (pert) kaydı: standart alan ("Kayıtlı: Evet") + serbest yazım
+  // ("AĞIR HASAR KAYDI ... MEVCUT" — araya yıl/tutar girebilir, GERÇEK Mercedes vakası)
+  const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:l[ıi])?(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i)
+    || flat.match(/a[ğg][ıi]r\s*hasar\s*kayd[ıi].{0,60}?\b(mevcut(?:tur)?|vard[ıi]r|var|yok(?:tur)?|hay[ıi]r)\b/i);
+  if (hv) out.heavy = /evet|var|mevcut/i.test(hv[1]) ? 'yes' : 'no';
+  if (out.heavy === 'yes' && /sigorta\s*[şs]i[şs]irmesi/i.test(flat))
+    out._flags.heavy = 'İlan "ağır hasar kaydı mevcut" diyor; satıcının "sigorta şişirmesi" savunması SBM sorgusuz doğrulanamaz — pert kademesi uygulanır, sorgu şart.';
   return out;
 }
 
@@ -1335,7 +1356,8 @@ async function handleImage(source) {
       logger: m => { if (m.status === 'recognizing text') status.textContent = 'Görüntü okunuyor… %' + Math.round(m.progress * 100); }
     });
     status.classList.add('hidden');
-    showOcrConfirm(ocrExtract(data.text), data.text);
+    mergeOcr(ocrExtract(data.text), '📷 görüntü', data.text);
+    showOcrConfirm();
   } catch (e) {
     status.textContent = '⚠️ ' + e.message;
   }
@@ -1346,39 +1368,101 @@ const OCR_FIELDS = [
   ['painted', 'Boyalı parça'], ['replaced', 'Değişen parça'], ['ask', 'İlan fiyatı (TL)'],
 ];
 
-function showOcrConfirm(fields, rawText) {
+// ---- ÇOK KAYNAKLI BİRLEŞTİRME ----
+// İlan verisi tek yerden gelmez: ekran görüntüsünde fiyat/km, açıklama metninde tramer/hasar
+// olabilir. Her çözümleme (görüntü ya da metin) aynı bekleyen kümeye KATKI yapar: boş alanı
+// doldurur, dolu alanla çelişirse ÜZERİNE YAZMAZ — bayrak düşer, karar kullanıcının.
+// Faz 1'de OCR yerine LLM vision gelse de bu katman aynen kalır.
+let pendingOcr = null;
+const OCR_KEYS = ['name', 'year', 'km', 'tramer', 'painted', 'replaced', 'ask', 'heavy'];
+const OCR_LABELS = { name: 'Marka/Model', year: 'Model yılı', km: 'Kilometre', tramer: 'Tramer',
+                     painted: 'Boyalı parça', replaced: 'Değişen parça', ask: 'İlan fiyatı', heavy: 'Ağır hasar' };
+const fmtField = (k, v) => k === 'heavy' ? (v === 'yes' ? 'Evet' : 'Hayır')
+  : (typeof v === 'number' ? v.toLocaleString('tr-TR') : v);
+
+function resetOcr() {
+  pendingOcr = null;
+  const c = $('ocrConfirm');
+  c.classList.add('hidden');
+  c.innerHTML = '';
+}
+
+// Onay ekranındaki elle düzeltmeleri bekleyen kümeye geri oku — kullanıcının değeri
+// sonraki kaynaklardan üstündür, sessizce ezilmez.
+function syncPendingFromScreen() {
+  if (!pendingOcr || $('ocrConfirm').classList.contains('hidden') || !$('ocr_name')) return;
+  const read = {
+    name: $('ocr_name').value.trim() || undefined,
+    heavy: $('ocr_heavy').value === 'unknown' ? undefined : $('ocr_heavy').value,
+  };
+  for (const [k] of OCR_FIELDS) read[k] = $('ocr_' + k).value === '' ? undefined : parseFloat($('ocr_' + k).value);
+  for (const k of OCR_KEYS) {
+    if (read[k] === undefined) { delete pendingOcr.fields[k]; delete pendingOcr.src[k]; continue; }
+    if (pendingOcr.fields[k] !== read[k]) { pendingOcr.fields[k] = read[k]; pendingOcr.src[k] = 'elle düzeltildi'; }
+  }
+}
+
+function mergeOcr(fields, srcLabel, rawText) {
+  syncPendingFromScreen();
+  if (!pendingOcr) pendingOcr = { fields: {}, src: {}, flags: {}, raws: [] };
+  const p = pendingOcr;
+  // Farklı ilan sezgisi: isim VE yıl birden çelişiyorsa birleştirme yanıltabilir — uyar
+  if (fields.year && p.fields.year && fields.year !== p.fields.year && fields.name && p.fields.name
+      && !trFix(fields.name).toLowerCase().includes(trFix(p.fields.name).toLowerCase().split(' ')[0]))
+    p.flags._differentAd = 'İsim ve yıl birden çelişti — bu FARKLI BİR İLAN olabilir; öyleyse "Yeni ilan" ile sıfırdan başla.';
+  Object.assign(p.flags, fields._flags || {});
+  for (const k of OCR_KEYS) {
+    if (fields[k] === undefined) continue;
+    if (p.fields[k] === undefined) { p.fields[k] = fields[k]; p.src[k] = srcLabel; }
+    else if (p.fields[k] !== fields[k]) {
+      if (k === 'name') { // isim çelişkisi normal (OCR bozar) — uzun olan kazanır
+        if (String(fields[k]).length > String(p.fields[k]).length) { p.fields[k] = fields[k]; p.src[k] = srcLabel; }
+      } else p.flags['conflict_' + k] = 'Kaynaklar çelişiyor — ' + OCR_LABELS[k] + ': '
+        + fmtField(k, p.fields[k]) + ' (' + p.src[k] + ') ↔ ' + fmtField(k, fields[k]) + ' (' + srcLabel + '). İlki tutuldu, kontrol et.';
+    }
+  }
+  p.raws.push('[' + srcLabel + ']\n' + rawText);
+}
+
+function showOcrConfirm() {
+  const p = pendingOcr, fields = p.fields;
   const c = $('ocrConfirm');
   c.classList.remove('hidden');
-  c.innerHTML = '<p class="ocr-lead">Görüntüden okunanlar — <b>lütfen kontrol et, eksiği/yanlışı düzelt:</b></p>'
-    + '<div style="margin-bottom:10px"><label>Marka / Model '
-    + (fields.name ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+  const badge = k => fields[k] !== undefined
+    ? (p.flags[k] || p.flags['conflict_' + k]
+        ? '<span class="suspect">⚠ kontrol et</span>'
+        : '<span class="found">✓ ' + (p.src[k] || 'okundu') + '</span>')
+    : '<span class="notfound">bulunamadı</span>';
+  c.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+    + '<p class="ocr-lead" style="margin:0">Okunanlar — <b>kontrol et, eksiği/yanlışı düzelt.</b> '
+    + '<span class="wf-note">Başka görüntü/metin de okutursan alanlar birleştirilir (şu an ' + p.raws.length + ' kaynak).</span></p>'
+    + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border);white-space:nowrap" onclick="resetOcr()">🔄 Yeni ilan</button></div>'
+    + '<div style="margin:10px 0"><label>Marka / Model ' + badge('name')
     + '</label><input type="text" id="ocr_name" value="' + (fields.name || '').replace(/"/g, '&quot;') + '"></div>'
     + '<div class="coef-grid">'
     + OCR_FIELDS.map(([k, label]) =>
-      '<div><label>' + label + ' '
-      + (fields[k] !== undefined
-          ? (fields._flags && fields._flags[k] ? '<span class="suspect">⚠ kontrol et</span>' : '<span class="found">✓ okundu</span>')
-          : '<span class="notfound">bulunamadı</span>')
+      '<div><label>' + label + ' ' + badge(k)
       + '</label><input type="number" inputmode="numeric" id="ocr_' + k + '" value="' + (fields[k] !== undefined ? fields[k] : '') + '"></div>').join('')
     + '</div>'
-    + '<div style="margin-top:10px"><label>Ağır hasar (pert) kaydı '
-    + (fields.heavy !== undefined ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+    + '<div style="margin-top:10px"><label>Ağır hasar (pert) kaydı ' + badge('heavy')
     + '</label><select id="ocr_heavy">'
     + '<option value="unknown"' + (fields.heavy === undefined ? ' selected' : '') + '>Bilinmiyor</option>'
     + '<option value="no"' + (fields.heavy === 'no' ? ' selected' : '') + '>Hayır</option>'
     + '<option value="yes"' + (fields.heavy === 'yes' ? ' selected' : '') + '>Evet — ağır hasar kayıtlı</option>'
     + '</select></div>'
-    + Object.values(fields._flags || {}).map(t => '<p class="ocr-lead" style="margin-top:8px;color:var(--yellow)">⚠️ ' + t + '</p>').join('')
+    + Object.values(p.flags).map(t => '<p class="ocr-lead" style="margin-top:8px;color:var(--yellow)">⚠️ ' + t + '</p>').join('')
     + '<p class="ocr-lead" style="margin-top:10px">🎯 <b>Tam analiz için tramer ve boyalı/değişen önemli.</b> İlanda yoksa ekspertiz/hasar bölümünün görüntüsünü de okutabilirsin; bilinmiyorsa boş bırak — dürüstçe "kısmi analiz" der, tramer için temkinli senaryo hesaplarız.</p>'
     + '<p class="ocr-lead" style="margin-top:6px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
     + '<div style="display:flex;gap:10px;margin-top:12px">'
     + '<button class="btn" onclick="applyOcr()">✅ Onayla ve Değerle</button>'
     + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="$(\'ocrConfirm\').classList.add(\'hidden\')">Vazgeç</button>'
     + '</div>'
-    + '<details><summary>Ham OCR metni (şeffaflık)</summary><pre class="ocr-raw">' + rawText.replace(/</g, '&lt;') + '</pre></details>';
+    + '<details><summary>Ham kaynak metinleri (şeffaflık)</summary><pre class="ocr-raw">'
+    + p.raws.map(r => r.replace(/</g, '&lt;')).join('\n\n──────────\n\n') + '</pre></details>';
 }
 
 function applyOcr() {
+  syncPendingFromScreen(); // elle düzeltmeler bekleyen kümede kalsın — sonra eklenen kaynak ezmesin
   const map = { year: 'modelYear', km: 'km', tramer: 'tramer', painted: 'painted', replaced: 'replaced', ask: 'askPrice' };
   // Hasar alanları bilinmiyorsa formda da BOŞ kalmalı — eski değer sessizce kalırsa
   // "bilinmiyor" durumu kaybolur, iki senaryo ve kalite etiketi devreye giremez.
@@ -1415,7 +1499,8 @@ function analyzeText() {
   const t = $('listingText').value.trim();
   if (!t) { $('listingText').focus(); return; }
   $('ocrStatus').classList.add('hidden');
-  showOcrConfirm(ocrExtract(t), t);
+  mergeOcr(ocrExtract(t), '📝 metin', t);
+  showOcrConfirm();
 }
 
 const dz = $('dropzone');

@@ -366,6 +366,9 @@
     .car-card { grid-template-columns: 1fr; }
     .car-card .prices { text-align: left; }
   }
+  /* Çapa bulunamayınca alana dikkat çek (OCR onayı sonrası) */
+  .anchor-attn { outline: 2px solid var(--yellow); border-radius: 8px; animation: anchorPulse 1s ease-in-out 3; }
+  @keyframes anchorPulse { 50% { outline-color: transparent; } }
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22rg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2335C58F%22/%3E%3Cstop%20offset%3D%220.65%22%20stop-color%3D%22%232D7DD2%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%232D7DD2%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2335C58F%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2226%22%20fill%3D%22%23FFFFFF%22/%3E%3Cline%20x1%3D%2278%22%20y1%3D%2280%22%20x2%3D%2294%22%20y2%3D%2296%22%20stroke%3D%22%231B2A5B%22%20stroke-width%3D%2211%22%20stroke-linecap%3D%22round%22/%3E%3Cg%20fill%3D%22url%28%23bg%29%22%3E%3Crect%20x%3D%2242%22%20y%3D%2266%22%20width%3D%226%22%20height%3D%2214%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2250%22%20y%3D%2261%22%20width%3D%226%22%20height%3D%2219%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2258%22%20y%3D%2255%22%20width%3D%226%22%20height%3D%2225%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2266%22%20y%3D%2248%22%20width%3D%226%22%20height%3D%2232%22%20rx%3D%221.5%22/%3E%3C/g%3E%3Cg%20stroke%3D%22%231B2A5B%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M%2074%2062%20A%2018%2018%200%201%201%2074.5%2041%22%20stroke-width%3D%229%22/%3E%3Cline%20x1%3D%2240%22%20y1%3D%2253%22%20x2%3D%2277%22%20y2%3D%2245%22%20stroke-width%3D%228%22/%3E%3C/g%3E%3Ccircle%20cx%3D%2257%22%20cy%3D%2256%22%20r%3D%2236%22%20fill%3D%22none%22%20stroke%3D%22url%28%23rg%29%22%20stroke-width%3D%229%22/%3E%3C/svg%3E">
 </head>
@@ -900,7 +903,7 @@ function renderHero(car) {
     : 'Marka/model girilmedi — Araç Bilgileri formundan ekleyebilirsin';
   const chips = [];
   if (car.year) chips.push(['📅', car.year + ' model']);
-  if (car.km) chips.push(['🛣', car.km.toLocaleString('tr-TR') + ' km']);
+  if (car.km) chips.push(['🛣', car.km.toLocaleString('tr-TR') + ' km' + (car._kmKnown === false ? ' (varsayım)' : '')]);
   chips.push(['📋', car._tramerKnown === false ? 'Tramer bilinmiyor'
     : (car.tramer > 0 ? 'Tramer ' + fmt(car.tramer) : 'Tramersiz')]);
   chips.push(['🎨', car._bodyKnown === false ? 'Boya/değişen bilinmiyor'
@@ -948,8 +951,14 @@ function calc() {
   // "Bilinmiyor" ile "0 (tramersiz/hasarsız beyanı)" farklı şeylerdir — boş alan bilinmiyordur.
   const tramerKnown = $('tramer').value !== '';
   const bodyKnown = $('painted').value !== '' && $('replaced').value !== '';
+  const kmKnown = $('km').value !== '';
   car._tramerKnown = tramerKnown;
   car._bodyKnown = bodyKnown;
+  car._kmKnown = kmKnown;
+  // Bilinmeyen km 0 km DEĞİLDİR — 0 sayılırsa araç haksız düşük-km primi alır.
+  // Yaşa göre beklenen km varsayılır: sürekli ceza/prim nötrlenir, psikolojik
+  // eşikler gerçekçi varsayımdan işler; eksiklik kısmi analizde raporlanır.
+  if (!kmKnown) car.km = Math.max(0, CURRENT_YEAR - car.year) * (val('normKm') || 15000);
   car.roofDamage = $('roofDamage').checked;
   car.chassisDamage = $('chassisDamage').checked;
   car.hoodReplaced = $('hoodReplaced').checked;
@@ -996,6 +1005,7 @@ function calc() {
 
   // Analiz kalitesi etiketi — uydurma skor değil, girilen verinin eksiksizliği
   const missing = [];
+  if (!kmKnown) missing.push('kilometre (yaşa göre ~' + car.km.toLocaleString('tr-TR') + ' km varsayıldı)');
   if (!tramerKnown) missing.push('tramer (iki senaryo gösterildi)');
   if (!bodyKnown) missing.push('boyalı/değişen (iyimser varsayıldı)');
   if (!heavyKnown) missing.push('ağır hasar kaydı (iyimser varsayıldı)');
@@ -1086,7 +1096,7 @@ function calc() {
     ['Sıfır muadil fiyat', fmt(car.newPrice), '', 'Bugünkü liste fiyatı — ederin çapası'],
     [`🕐 Yaş etkisi (${rr.age} yıl, bileşik)`, '−' + fmt(rr.ageDeduction), 'neg',
       'Bileşik amortisman; ilk yıl en dik, sonra yumuşar'],
-    [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${rr.expectedKm.toLocaleString('tr-TR')})</span>`,
+    [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')}${car._kmKnown === false ? ' varsayım' : ''} / beklenen ${rr.expectedKm.toLocaleString('tr-TR')})</span>`,
       kmV, kmC, 'Beklenen km\'den sapmaya göre ceza ya da sınırlı prim'],
   ];
   if (rr.kmSteps > 0) wf.push([`📉 Psikolojik km eşiği <span class="wf-note">(${rr.kmSteps === 2 ? '100.000 ve 200.000' : '100.000'} km aşıldı)</span>`,
@@ -1274,7 +1284,7 @@ function ocrExtract(text) {
     if (d) out.replaced = parseInt(d[1], 10);
   }
   // Ağır hasar (pert) kaydı: sahibinden/arabam ilanlarında standart alan
-  const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i);
+  const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:l[ıi])?(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i);
   if (hv) out.heavy = /evet|var/i.test(hv[1]) ? 'yes' : 'no';
   return out;
 }
@@ -1372,7 +1382,7 @@ function applyOcr() {
   const map = { year: 'modelYear', km: 'km', tramer: 'tramer', painted: 'painted', replaced: 'replaced', ask: 'askPrice' };
   // Hasar alanları bilinmiyorsa formda da BOŞ kalmalı — eski değer sessizce kalırsa
   // "bilinmiyor" durumu kaybolur, iki senaryo ve kalite etiketi devreye giremez.
-  const clearable = new Set(['tramer', 'painted', 'replaced']);
+  const clearable = new Set(['km', 'tramer', 'painted', 'replaced']);
   for (const k in map) {
     const v = $('ocr_' + k).value;
     if (v !== '') $(map[k]).value = v;
@@ -1384,7 +1394,20 @@ function applyOcr() {
   calc();
   $('ocrConfirm').classList.add('hidden');
   $('confDetail').textContent = 'BETA · görüntüden okundu, kullanıcı onayladı';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (val('newPrice') > 0) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    // Çapa yok → hesap bilerek yapılmadı; kullanıcıyı sonuca değil ÇAPA alanına
+    // götür ve vurgula — yoksa "buton çalışmıyor" sanılıyor (saha bulgusu, 18.07.2026).
+    for (const id of ['anchorSelect', 'newPrice']) {
+      const el = $(id);
+      el.classList.remove('anchor-attn');
+      void el.offsetWidth; // animasyonu yeniden tetikle
+      el.classList.add('anchor-attn');
+      setTimeout(() => el.classList.remove('anchor-attn'), 4000);
+    }
+    $('newPrice').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 // Metinden analiz: yapıştırılan ilan metni OCR ile aynı çıkarım + onay akışından geçer

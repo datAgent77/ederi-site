@@ -169,6 +169,10 @@
     border: 1px solid rgba(77,163,255,.15); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
   .req-note b { color: var(--text); }
   .suspect { color: var(--yellow); font-size: 11px; font-weight: 700; }
+  .dmg-row { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 4px 2px; }
+  .dmg-row .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text);
+    margin: 0; cursor: pointer; }
+  .dmg-row .chk input { width: auto; accent-color: var(--accent); }
   .cmp-box .v.fair.range { font-size: 21px; line-height: 1.3; }
 
   /* Güven şeridi */
@@ -547,6 +551,18 @@
           <div><label>Boyalı parça sayısı</label><input type="number" inputmode="numeric" id="painted" value="" min="0" max="15" placeholder="bilinmiyor"></div>
           <div><label>Değişen parça sayısı</label><input type="number" inputmode="numeric" id="replaced" value="" min="0" max="15" placeholder="bilinmiyor"></div>
         </div>
+        <label>Hasar yeri (biliniyorsa işaretle) — <span class="wf-note">aynı tramerde tavan/şasi işlemi değeri çok daha fazla düşürür</span></label>
+        <div class="dmg-row">
+          <label class="chk"><input type="checkbox" id="roofDamage"> Tavan boyalı/değişen</label>
+          <label class="chk"><input type="checkbox" id="chassisDamage"> Şasi/podye işlemli</label>
+          <label class="chk"><input type="checkbox" id="hoodReplaced"> Kaput değişen</label>
+        </div>
+        <label>Ağır hasar (pert) kaydı — <span class="wf-note">ilanlarda "Ağır Hasar Kayıtlı" alanı; ayrı ve büyük bir kademedir</span></label>
+        <select id="heavyDamage">
+          <option value="unknown">Bilinmiyor</option>
+          <option value="no">Hayır</option>
+          <option value="yes">Evet — ağır hasar kayıtlı</option>
+        </select>
         <label>Piyasa ilan fiyatı (TL)</label>
         <input type="number" inputmode="numeric" id="askPrice" value="" step="10000" placeholder="karşılaştırma için ilandaki fiyat">
 
@@ -561,7 +577,14 @@
             <div><label>Tramer doyum eşiği (değere oran)</label><input type="number" inputmode="decimal" id="tramerSat" value="0.35" step="0.05"></div>
             <div><label>Boyalı parça başına düşüm %</label><input type="number" inputmode="decimal" id="paintPen" value="1.5" step="0.1"></div>
             <div><label>Değişen parça başına düşüm %</label><input type="number" inputmode="decimal" id="replacePen" value="3" step="0.1"></div>
+            <div><label>Psikolojik km eşiği %/eşik (100k, 200k)</label><input type="number" inputmode="decimal" id="kmStepPen" value="3" step="0.5"></div>
+            <div><label>Tavan boyalı/değişen ek düşüm %</label><input type="number" inputmode="decimal" id="roofPen" value="12" step="1"></div>
+            <div><label>Şasi/podye işlemi ek düşüm %</label><input type="number" inputmode="decimal" id="chassisPen" value="20" step="1"></div>
+            <div><label>Kaput değişimi ek düşüm %</label><input type="number" inputmode="decimal" id="hoodPen" value="7" step="1"></div>
+            <div><label>Ağır hasar (pert) kaydı düşümü %</label><input type="number" inputmode="decimal" id="heavyPen" value="35" step="1"></div>
           </div>
+          <p class="link-note" style="margin-top:8px">Hasar yeri ve ağır hasar katsayıları saha araştırmasına dayanır (18.07.2026:
+          tavan %15-25, şasi/podye %20-35, kaput %10-15, pert %30-45 bandları) — gerçek ilan kalibrasyonuyla rafine edilecek.</p>
         </details>
       </div>
     </div>
@@ -632,15 +655,35 @@ function engine(car, coef) {
   else kmAdjPct = Math.min(3, (-kmDiff/10000) * 0.5);
   const kmAdj = afterAge * kmAdjPct/100;
 
+  // Psikolojik km eşikleri (saha bulgusu, 18.07.2026 araştırması): 100.000 ve 200.000 km
+  // alıcı algısında kademe atlatır — 99k'daki araç 105k'dakinden %5-8 değerli olabilir.
+  // Sürekli ceza yukarıda; eşik başına ek basamak burada (varsayılan %3, düzenlenebilir).
+  const kmSteps = (car.km >= 100000 ? 1 : 0) + (car.km >= 200000 ? 1 : 0);
+  const kmStepPct = -(coef.kmStepPen ?? 3) * kmSteps;
+  const kmStepDed = afterAge * kmStepPct/100;
+
   const tRatio = afterAge > 0 ? car.tramer / afterAge : 0;
   const tramerPct = -30 * (1 - Math.exp(-tRatio / coef.tramerSat));
   const tramerDed = afterAge * tramerPct/100;
 
-  const bodyPct = -Math.min(25, car.painted*coef.paintPen + car.replaced*coef.replacePen);
+  // Kaporta: parça sayısı + hasarın YERİ (saha bulgusu: aynı tramerde tavan %15-25,
+  // şasi/podye %20-35, kaput değişimi %10-15 düşürür — yer, tutar kadar önemli).
+  // Yer işaretleri parça sayısının ÜZERİNE ek düşümdür; toplam tavan %40.
+  const locPct = (car.roofDamage ? (coef.roofPen ?? 12) : 0)
+               + (car.chassisDamage ? (coef.chassisPen ?? 20) : 0)
+               + (car.hoodReplaced ? (coef.hoodPen ?? 7) : 0);
+  const bodyPct = -Math.min(40, car.painted*coef.paintPen + car.replaced*coef.replacePen + locPct);
   const bodyDed = afterAge * bodyPct/100;
 
-  const fair = Math.max(0, afterAge + kmAdj + tramerDed + bodyDed);
-  return { fair, afterAge, ageDeduction: car.newPrice - afterAge, kmAdj, expectedKm, tramerDed, tramerPct, bodyDed, age };
+  let fair = Math.max(0, afterAge + kmAdj + kmStepDed + tramerDed + bodyDed);
+  // Ağır hasar (pert) kaydı ayrı kademedir: piyasa bandı %30-45, varsayılan %35 —
+  // kalan değer üzerinden uygulanır ki diğer cezalarla üst üste absürtleşmesin.
+  const heavyPct = car.heavyDamage ? -(coef.heavyPen ?? 35) : 0;
+  const heavyDed = fair * heavyPct/100;
+  fair = Math.max(0, fair + heavyDed);
+
+  return { fair, afterAge, ageDeduction: car.newPrice - afterAge, kmAdj, expectedKm,
+           kmSteps, kmStepPct, kmStepDed, tramerDed, tramerPct, bodyDed, locPct, heavyDed, heavyPct, age };
 }
 
 function coefs() {
@@ -648,6 +691,8 @@ function coefs() {
     depY1: val('depY1'), depY2: val('depY2'), depY6: val('depY6'),
     normKm: val('normKm'), kmSev: val('kmSev'), tramerSat: val('tramerSat'),
     paintPen: val('paintPen'), replacePen: val('replacePen'),
+    kmStepPen: val('kmStepPen'), roofPen: val('roofPen'),
+    chassisPen: val('chassisPen'), hoodPen: val('hoodPen'), heavyPen: val('heavyPen'),
   };
 }
 
@@ -823,16 +868,16 @@ function carNameFromUrl(url) {
 // Yalnızca 'binek' gerçek ilanlarla kalibre ediliyor; diğerleri uzman varsayımıdır.
 const SEGMENTS = {
   binek:   { label: 'Binek C/D',
-             coef: { depY1: 15, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3 },
+             coef: { depY1: 15, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3, kmStepPen: 3 },
              note: 'Ana akım binek (C/D — Egea, Megane, Passat…). Kalibrasyon bu segmentte yürüyor.' },
   premium: { label: 'Premium/Lüks',
-             coef: { depY1: 22, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 3, replacePen: 6 },
+             coef: { depY1: 22, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 3, replacePen: 6, kmStepPen: 3 },
              note: 'E/F segmenti (BMW 5, Mercedes E/S…): ilk yıl kaybı daha dik, hasar hassasiyeti yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı, sonucu temkinli yorumla.' },
   ticari:  { label: 'Ticari/Filo',
-             coef: { depY1: 12, depY2: 8.5, depY6: 6, normKm: 30000, paintPen: 1, replacePen: 2 },
+             coef: { depY1: 12, depY2: 8.5, depY6: 6, normKm: 30000, paintPen: 1, replacePen: 2, kmStepPen: 1 },
              note: 'Hafif ticari / filo (Courier, Doblo…): km normu 30.000/yıl, hasar toleransı yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı.' },
   ev:      { label: 'Elektrikli',
-             coef: { depY1: 20, depY2: 12, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3 },
+             coef: { depY1: 20, depY2: 12, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3, kmStepPen: 3 },
              note: 'Elektrikli: teknolojik eskime ve batarya sağlığı eğriyi dikleştirir (lüks EV vakasında 1. yıl ~%30-35 ölçtük). En az kalibre profil — sonucu temkinli yorumla.' },
 };
 let activeSegment = 'binek';
@@ -861,6 +906,9 @@ function renderHero(car) {
   chips.push(['🎨', car._bodyKnown === false ? 'Boya/değişen bilinmiyor'
     : ((car.painted || car.replaced)
       ? car.painted + ' boyalı · ' + car.replaced + ' değişen' : 'Boyasız / değişensiz')]);
+  if (car.heavyDamage) chips.push(['🚨', 'Ağır hasar kayıtlı']);
+  const locs = [car.roofDamage && 'tavan', car.chassisDamage && 'şasi', car.hoodReplaced && 'kaput'].filter(Boolean);
+  if (locs.length) chips.push(['📍', 'Hasar yeri: ' + locs.join(', ')]);
   chips.push(['🏷', SEGMENTS[activeSegment].label + ' profili'
     + (activeSegment === 'binek' ? '' : ' (varsayım)')]);
   $('specChips').innerHTML = chips.map(([ic, t]) =>
@@ -902,6 +950,13 @@ function calc() {
   const bodyKnown = $('painted').value !== '' && $('replaced').value !== '';
   car._tramerKnown = tramerKnown;
   car._bodyKnown = bodyKnown;
+  car.roofDamage = $('roofDamage').checked;
+  car.chassisDamage = $('chassisDamage').checked;
+  car.hoodReplaced = $('hoodReplaced').checked;
+  const heavySel = $('heavyDamage').value;
+  const heavyKnown = heavySel !== 'unknown';
+  car.heavyDamage = heavySel === 'yes';
+  car._heavyKnown = heavyKnown;
 
   // Çapa yoksa hesap YOK — varsayılan değerle sessiz hesap güveni zedeler
   if (!car.newPrice) {
@@ -943,6 +998,7 @@ function calc() {
   const missing = [];
   if (!tramerKnown) missing.push('tramer (iki senaryo gösterildi)');
   if (!bodyKnown) missing.push('boyalı/değişen (iyimser varsayıldı)');
+  if (!heavyKnown) missing.push('ağır hasar kaydı (iyimser varsayıldı)');
   if (!(askPrice > 0)) missing.push('ilan fiyatı (karşılaştırma yok)');
   const pill = $('qualPill'), qn = $('qualNote');
   if (r.fair > 0) {
@@ -1025,18 +1081,27 @@ function calc() {
   const tramerLbl = tramerKnown
     ? `(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(rr.tramerPct).toFixed(1)})`
     : `(bilinmiyor — temkinli 60.000 TL varsayımı, iyimser: tramersiz)`;
+  const locNames = [car.roofDamage && 'tavan', car.chassisDamage && 'şasi/podye', car.hoodReplaced && 'kaput değişimi'].filter(Boolean);
   const wf = [
     ['Sıfır muadil fiyat', fmt(car.newPrice), '', 'Bugünkü liste fiyatı — ederin çapası'],
     [`🕐 Yaş etkisi (${rr.age} yıl, bileşik)`, '−' + fmt(rr.ageDeduction), 'neg',
       'Bileşik amortisman; ilk yıl en dik, sonra yumuşar'],
     [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${rr.expectedKm.toLocaleString('tr-TR')})</span>`,
       kmV, kmC, 'Beklenen km\'den sapmaya göre ceza ya da sınırlı prim'],
+  ];
+  if (rr.kmSteps > 0) wf.push([`📉 Psikolojik km eşiği <span class="wf-note">(${rr.kmSteps === 2 ? '100.000 ve 200.000' : '100.000'} km aşıldı)</span>`,
+    '−' + fmt(Math.abs(rr.kmStepDed)), 'neg', 'Alıcı algısında eşik atlaması — 99k ile 105k aynı fiyatlanmaz']);
+  wf.push(
     [`📋 Tramer etkisi <span class="wf-note">${tramerLbl}</span>`,
       trV, trC, 'Doyumlu eğri: hasar oranı büyüdükçe ek etkisi azalır'],
-    [`🎨 Kaporta / boya <span class="wf-note">(${bodyKnown ? car.painted + ' boyalı, ' + car.replaced + ' değişen' : 'bilinmiyor — iyimser varsayıldı'})</span>`,
-      bdV, bdC, 'Parça başına sabit düşüm, segment profiline göre'],
-    ['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total', ''],
-  ];
+    [`🎨 Kaporta / boya <span class="wf-note">(${bodyKnown ? car.painted + ' boyalı, ' + car.replaced + ' değişen' : 'bilinmiyor — iyimser varsayıldı'}${locNames.length ? ' + ' + locNames.join(', ') : ''})</span>`,
+      bdV, bdC, locNames.length
+        ? 'Hasar yeri ağırlığı dahil: tavan/şasi işlemi parça sayısından çok daha ağır basar'
+        : 'Parça başına sabit düşüm, segment profiline göre']
+  );
+  if (car.heavyDamage) wf.push([`🚨 Ağır hasar (pert) kaydı <span class="wf-note">(kalan değer üzerinden %${Math.abs(rr.heavyPct)})</span>`,
+    '−' + fmt(Math.abs(rr.heavyDed)), 'neg', 'Pert kaydı ayrı kademedir — piyasa bandı %30-45']);
+  wf.push(['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total', '']);
   $('waterfall').innerHTML = wf.map(([l,v,c,e]) =>
     `<div class="wf-item"><span>${l}${e ? `<span class="wf-exp">${e}</span>` : ''}</span><span class="${c}">${v}</span></div>`).join('');
   $('sideTotal').textContent = rCons ? fmt(rCons.fair) + ' – ' + fmt(r.fair) : fmt(r.fair);
@@ -1058,7 +1123,7 @@ function mockAnalyze() {
   }
   $('newPrice').value = 1750000; $('modelYear').value = 2020; $('km').value = 145000;
   $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
-  $('askPrice').value = 1250000;
+  $('askPrice').value = 1250000; $('heavyDamage').value = 'no';
   calc();
   $('confDetail').textContent = 'BETA · örnek ilanla dolduruldu';
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1208,6 +1273,9 @@ function ocrExtract(text) {
       || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b(?!\s*(?:lokal\s*)?boyal)/i);
     if (d) out.replaced = parseInt(d[1], 10);
   }
+  // Ağır hasar (pert) kaydı: sahibinden/arabam ilanlarında standart alan
+  const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i);
+  if (hv) out.heavy = /evet|var/i.test(hv[1]) ? 'yes' : 'no';
   return out;
 }
 
@@ -1283,6 +1351,13 @@ function showOcrConfirm(fields, rawText) {
           : '<span class="notfound">bulunamadı</span>')
       + '</label><input type="number" inputmode="numeric" id="ocr_' + k + '" value="' + (fields[k] !== undefined ? fields[k] : '') + '"></div>').join('')
     + '</div>'
+    + '<div style="margin-top:10px"><label>Ağır hasar (pert) kaydı '
+    + (fields.heavy !== undefined ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+    + '</label><select id="ocr_heavy">'
+    + '<option value="unknown"' + (fields.heavy === undefined ? ' selected' : '') + '>Bilinmiyor</option>'
+    + '<option value="no"' + (fields.heavy === 'no' ? ' selected' : '') + '>Hayır</option>'
+    + '<option value="yes"' + (fields.heavy === 'yes' ? ' selected' : '') + '>Evet — ağır hasar kayıtlı</option>'
+    + '</select></div>'
     + Object.values(fields._flags || {}).map(t => '<p class="ocr-lead" style="margin-top:8px;color:var(--yellow)">⚠️ ' + t + '</p>').join('')
     + '<p class="ocr-lead" style="margin-top:10px">🎯 <b>Tam analiz için tramer ve boyalı/değişen önemli.</b> İlanda yoksa ekspertiz/hasar bölümünün görüntüsünü de okutabilirsin; bilinmiyorsa boş bırak — dürüstçe "kısmi analiz" der, tramer için temkinli senaryo hesaplarız.</p>'
     + '<p class="ocr-lead" style="margin-top:6px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
@@ -1303,6 +1378,7 @@ function applyOcr() {
     if (v !== '') $(map[k]).value = v;
     else if (clearable.has(k)) $(map[k]).value = '';
   }
+  $('heavyDamage').value = $('ocr_heavy').value;
   $('carName').value = $('ocr_name').value.trim();
   autoAnchor($('carName').value); // isimden çapayı sistem bulur; bulamazsa açıkça söyler
   calc();
@@ -1413,8 +1489,11 @@ $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanacak. Uydurma skor göstermeyiz.';
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
- 'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen']
+ 'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen',
+ 'kmStepPen','roofPen','chassisPen','hoodPen','heavyPen']
   .forEach(id => $(id).addEventListener('input', calc));
+['roofDamage','chassisDamage','hoodReplaced','heavyDamage']
+  .forEach(id => $(id).addEventListener('change', calc));
 calc();
 </script>
 

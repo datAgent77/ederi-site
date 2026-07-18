@@ -157,6 +157,20 @@
 
   .wf-exp { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; font-weight: 400; }
 
+  /* Analiz kalitesi — veri eksiksizliği etiketi (uydurma skor değil) */
+  .qual-pill { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .5px;
+    border-radius: 6px; padding: 2px 8px; margin-left: 8px; vertical-align: 1px; }
+  .qual-pill.full { background: rgba(62,207,142,.14); color: var(--green); }
+  .qual-pill.partial { background: rgba(245,196,81,.14); color: var(--yellow); }
+  .qual-note { font-size: 12px; color: var(--muted); line-height: 1.6; background: rgba(245,196,81,.06);
+    border: 1px solid rgba(245,196,81,.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+  .qual-note b { color: var(--text); }
+  .req-note { font-size: 12px; color: var(--muted); line-height: 1.65; background: rgba(77,163,255,.06);
+    border: 1px solid rgba(77,163,255,.15); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
+  .req-note b { color: var(--text); }
+  .suspect { color: var(--yellow); font-size: 11px; font-weight: 700; }
+  .cmp-box .v.fair.range { font-size: 21px; line-height: 1.3; }
+
   /* Güven şeridi */
   .trust-strip { max-width: 1180px; margin: 26px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .trust { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--border);
@@ -408,17 +422,18 @@
       <div class="ocr-status hidden" id="ocrStatus"></div>
       <div class="ocr-confirm hidden" id="ocrConfirm"></div>
       <div class="link-bar" style="margin-top:14px">
-        <input type="text" id="listingUrl" placeholder="Ya da ilan linkini yapıştır (demo)">
+        <input type="text" id="listingUrl" placeholder="Ya da ilan linkini yapıştır — marka/model ve çapayı linkten buluruz">
         <button onclick="mockAnalyze()">Analiz Et</button>
       </div>
-      <p class="link-note">Link çözümleme henüz bağlı değil — örnek ilanla doldurur. Gerçek üründe AI ilandan bilgileri çıkarır, sen onaylarsın.</p>
+      <p class="link-note" id="linkNote">İlan sayfasını çekmeyiz (bot koruması + site kuralları). Link yapıştırırsan marka/modeli ve çapayı
+      senin için doldururuz; bilgiler için ekran görüntüsünü ya da metni yapıştırman gerekir. Boşken buton örnek ilanla doldurur (demo).</p>
     </div>
 
     <div class="result-grid">
       <div class="result-main">
         <div class="result-head hidden" id="resultHead">
           <div class="rh-ic">✓</div>
-          <div><div class="rh-t">Analiz Sonucu</div><div class="rh-s" id="rhTime">—</div></div>
+          <div><div class="rh-t">Analiz Sonucu <span class="qual-pill hidden" id="qualPill"></span></div><div class="rh-s" id="rhTime">—</div></div>
           <div class="rh-actions">
             <button class="rh-btn" id="btnShare" onclick="shareResult()">🔗 Paylaş</button>
             <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
@@ -465,6 +480,7 @@
             <span class="verdict-pill hidden" id="verdictPill"></span>
             <p class="verdict-msg" id="verdictMsg"></p>
           </div>
+          <p class="qual-note hidden" id="qualNote"></p>
           <div class="widget-row">
             <div class="widget"><div class="widget-h">🎯 Önerilen teklif</div><div class="val" id="offer">—</div>
               <div class="sub">rayiç + %2 pazarlık payı</div></div>
@@ -500,6 +516,9 @@
     <div class="grid">
       <div class="card">
         <h2>Araç Bilgileri</h2>
+        <p class="req-note">🎯 <b>Tam analiz için:</b> olmazsa olmazlar <b>sıfır muadil fiyatı (çapa), model yılı ve km</b> — bunlar olmadan hesap yapılmaz.
+        Sonucu ciddi etkileyenler: <b>tramer, boyalı/değişen, ilan fiyatı</b>. Bilmediğini boş bırak —
+        sonuç dürüstçe <b>"KISMİ ANALİZ"</b> etiketi alır, tramersiz için temkinli senaryo hesaplanır.</p>
         <label>Marka / Model (isteğe bağlı — sonuç kartında görünür)</label>
         <input type="text" id="carName" placeholder="Örn: Toyota Avensis 1.6 Elegant">
         <label>Segment profili — <span class="wf-note">yalnızca aşağıdaki katsayı varsayılanlarını değiştirir, hepsi görünür ve düzenlenebilir kalır</span></label>
@@ -522,14 +541,14 @@
           <div><label>Model yılı</label><input type="number" inputmode="numeric" id="modelYear" value="2021" min="1990" max="2026"></div>
           <div><label>Kilometre</label><input type="number" inputmode="numeric" id="km" value="120000" step="1000"></div>
         </div>
-        <label>Tramer kaydı toplamı (TL)</label>
-        <input type="number" inputmode="numeric" id="tramer" value="30000" step="1000">
+        <label>Tramer kaydı toplamı (TL) — <span class="wf-note">tramersizse 0 yaz; bilmiyorsan boş bırak (temkinli senaryo hesaplanır)</span></label>
+        <input type="number" inputmode="numeric" id="tramer" value="" step="1000" placeholder="bilinmiyor">
         <div class="row2">
-          <div><label>Boyalı parça sayısı</label><input type="number" inputmode="numeric" id="painted" value="2" min="0" max="15"></div>
-          <div><label>Değişen parça sayısı</label><input type="number" inputmode="numeric" id="replaced" value="0" min="0" max="15"></div>
+          <div><label>Boyalı parça sayısı</label><input type="number" inputmode="numeric" id="painted" value="" min="0" max="15" placeholder="bilinmiyor"></div>
+          <div><label>Değişen parça sayısı</label><input type="number" inputmode="numeric" id="replaced" value="" min="0" max="15" placeholder="bilinmiyor"></div>
         </div>
         <label>Piyasa ilan fiyatı (TL)</label>
-        <input type="number" inputmode="numeric" id="askPrice" value="950000" step="10000">
+        <input type="number" inputmode="numeric" id="askPrice" value="" step="10000" placeholder="karşılaştırma için ilandaki fiyat">
 
         <details id="metodoloji">
           <summary>⚙️ Metodoloji katsayıları (şeffaflık)</summary>
@@ -790,7 +809,7 @@ function carNameFromUrl(url) {
   try {
     const skip = /^(ilan|galeriden|sahibinden|satilik|kiralik|otomobil|vasita|arac|detay|com|www|tr)$/;
     const slugs = new URL(url).pathname.split('/').filter(Boolean)
-      .map(s => s.split('-').filter(w => w && !skip.test(w) && !/^\d{5,}$/.test(w)))
+      .map(s => s.split('-').filter(w => w && !skip.test(w) && !/^\d{5,}$/.test(w) && !/^(19|20)\d{2}$/.test(w)))
       .filter(w => w.length >= 2);
     if (!slugs.length) return '';
     const best = slugs.reduce((a, b) => b.length > a.length ? b : a);
@@ -837,9 +856,11 @@ function renderHero(car) {
   const chips = [];
   if (car.year) chips.push(['📅', car.year + ' model']);
   if (car.km) chips.push(['🛣', car.km.toLocaleString('tr-TR') + ' km']);
-  chips.push(['📋', car.tramer > 0 ? 'Tramer ' + fmt(car.tramer) : 'Tramersiz']);
-  chips.push(['🎨', (car.painted || car.replaced)
-    ? car.painted + ' boyalı · ' + car.replaced + ' değişen' : 'Boyasız / değişensiz']);
+  chips.push(['📋', car._tramerKnown === false ? 'Tramer bilinmiyor'
+    : (car.tramer > 0 ? 'Tramer ' + fmt(car.tramer) : 'Tramersiz')]);
+  chips.push(['🎨', car._bodyKnown === false ? 'Boya/değişen bilinmiyor'
+    : ((car.painted || car.replaced)
+      ? car.painted + ' boyalı · ' + car.replaced + ' değişen' : 'Boyasız / değişensiz')]);
   chips.push(['🏷', SEGMENTS[activeSegment].label + ' profili'
     + (activeSegment === 'binek' ? '' : ' (varsayım)')]);
   $('specChips').innerHTML = chips.map(([ic, t]) =>
@@ -876,6 +897,11 @@ function calc() {
   const car = { newPrice: val('newPrice'), year: val('modelYear'), km: val('km'),
                 tramer: val('tramer'), painted: val('painted'), replaced: val('replaced') };
   const askPrice = val('askPrice');
+  // "Bilinmiyor" ile "0 (tramersiz/hasarsız beyanı)" farklı şeylerdir — boş alan bilinmiyordur.
+  const tramerKnown = $('tramer').value !== '';
+  const bodyKnown = $('painted').value !== '' && $('replaced').value !== '';
+  car._tramerKnown = tramerKnown;
+  car._bodyKnown = bodyKnown;
 
   // Çapa yoksa hesap YOK — varsayılan değerle sessiz hesap güveni zedeler
   if (!car.newPrice) {
@@ -891,14 +917,43 @@ function calc() {
     $('dealRange').textContent = '—';
     $('waterfall').innerHTML = '';
     $('sideTotal').textContent = '—';
+    $('qualPill').classList.add('hidden');
+    $('qualNote').classList.add('hidden');
     lastResult = null;
     return;
   }
 
   const r = engine(car, coefs());
+  // İlke 5: tramer bilinmiyorsa iki senaryo — iyimser (tramersiz) + temkinli (60.000 TL varsayımı).
+  // Karar, alıcıyı koruyan temkinli senaryoya göre verilir.
+  const rCons = tramerKnown ? null : engine({ ...car, tramer: 60000 }, coefs());
+  const rr = rCons || r;
 
-  $('fairValue').textContent = fmt(r.fair);
+  const fv = $('fairValue');
+  if (rCons && rr.fair > 0) {
+    fv.textContent = fmt(rCons.fair) + ' – ' + fmt(r.fair);
+    fv.classList.add('range');
+  } else {
+    fv.textContent = fmt(r.fair);
+    fv.classList.remove('range');
+  }
   $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
+
+  // Analiz kalitesi etiketi — uydurma skor değil, girilen verinin eksiksizliği
+  const missing = [];
+  if (!tramerKnown) missing.push('tramer (iki senaryo gösterildi)');
+  if (!bodyKnown) missing.push('boyalı/değişen (iyimser varsayıldı)');
+  if (!(askPrice > 0)) missing.push('ilan fiyatı (karşılaştırma yok)');
+  const pill = $('qualPill'), qn = $('qualNote');
+  if (r.fair > 0) {
+    pill.classList.remove('hidden', 'full', 'partial');
+    pill.classList.add(missing.length ? 'partial' : 'full');
+    pill.textContent = missing.length ? 'KISMİ ANALİZ' : 'TAM ANALİZ';
+  } else pill.classList.add('hidden');
+  if (missing.length && r.fair > 0) {
+    qn.classList.remove('hidden');
+    qn.innerHTML = 'Eksik veri: ' + missing.join(' · ') + '. <b>Eksiksiz veri, daha isabetli eder demektir.</b>';
+  } else qn.classList.add('hidden');
   const heroName = r.fair > 0 ? renderHero(car) : null;
   if (r.fair > 0) {
     $('resultHead').classList.remove('hidden');
@@ -909,11 +964,11 @@ function calc() {
     $('resultHead').classList.add('hidden');
   }
 
-  if (askPrice > 0 && r.fair > 0) {
-    const gap = (askPrice - r.fair) / r.fair * 100;
-    const diff = askPrice - r.fair;
+  if (askPrice > 0 && rr.fair > 0) {
+    const gap = (askPrice - rr.fair) / rr.fair * 100;
+    const diff = askPrice - rr.fair;
     const [cls, verdict] = gapClass(gap);
-    lastResult = { name: heroName, ask: askPrice, fair: r.fair, gap };
+    lastResult = { name: heroName, ask: askPrice, fair: rr.fair, gap };
 
     const band = $('gapBand');
     band.classList.remove('hidden', 'up', 'down');
@@ -928,14 +983,15 @@ function calc() {
     const pill = $('verdictPill');
     pill.className = 'verdict-pill ' + cls;
     pill.textContent = verdict;
-    $('verdictMsg').innerHTML = gap >= 0
+    $('verdictMsg').innerHTML = (gap >= 0
       ? `Tahmini rayiç değerin <b>%${gap.toFixed(0)}</b> üzerinde — yaklaşık <b>${fmt(Math.abs(diff))}</b> fazla fiyatlandırılmış.`
-      : `Tahmini rayiç değerin <b>%${Math.abs(gap).toFixed(0)}</b> altında — sebebini araştırmakta fayda var.`;
+      : `Tahmini rayiç değerin <b>%${Math.abs(gap).toFixed(0)}</b> altında — sebebini araştırmakta fayda var.`)
+      + (rCons ? ' <span class="wf-note">(karar temkinli senaryoya göre)</span>' : '');
 
-    const offer = Math.min(r.fair * 1.02, askPrice);
+    const offer = Math.min(rr.fair * 1.02, askPrice);
     $('offer').textContent = fmt(offer);
     $('dealRange').textContent = gap > 2
-      ? `${fmt(r.fair*1.02)} – ${fmt(Math.min(r.fair*1.08, askPrice))}`
+      ? `${fmt(rr.fair*1.02)} – ${fmt(Math.min(rr.fair*1.08, askPrice))}`
       : fmt(askPrice);
 
     let advText;
@@ -946,7 +1002,7 @@ function calc() {
     $('adviceText').innerHTML = advText;
     $('adviceWidget').classList.remove('hidden');
   } else {
-    lastResult = r.fair > 0 ? { name: heroName, ask: 0, fair: r.fair, gap: 0 } : null;
+    lastResult = rr.fair > 0 ? { name: heroName, ask: 0, fair: rr.fair, gap: 0 } : null;
     $('gapBand').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
     $('verdictPill').classList.add('hidden');
@@ -955,28 +1011,46 @@ function calc() {
     $('dealRange').textContent = '—';
   }
 
-  const totalAdj = r.fair - car.newPrice;
+  const totalAdj = rr.fair - car.newPrice;
+  // Sıfır tutar nötr gösterilir ("−0 TL" kırmızısı yanıltıcı)
+  const dsp = (v, sign) => Math.abs(v) < 1 ? ['0 TL', ''] : [sign + fmt(Math.abs(v)), sign === '+' ? 'pos' : 'neg'];
+  const [kmV, kmC] = dsp(rr.kmAdj, rr.kmAdj >= 0 ? '+' : '−');
+  const [trV, trC] = dsp(rr.tramerDed, '−');
+  const [bdV, bdC] = dsp(rr.bodyDed, '−');
+  const tramerLbl = tramerKnown
+    ? `(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(rr.tramerPct).toFixed(1)})`
+    : `(bilinmiyor — temkinli 60.000 TL varsayımı, iyimser: tramersiz)`;
   const wf = [
     ['Sıfır muadil fiyat', fmt(car.newPrice), '', 'Bugünkü liste fiyatı — ederin çapası'],
-    [`🕐 Yaş etkisi (${r.age} yıl, bileşik)`, '−' + fmt(r.ageDeduction), 'neg',
+    [`🕐 Yaş etkisi (${rr.age} yıl, bileşik)`, '−' + fmt(rr.ageDeduction), 'neg',
       'Bileşik amortisman; ilk yıl en dik, sonra yumuşar'],
-    [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${r.expectedKm.toLocaleString('tr-TR')})</span>`,
-      (r.kmAdj>=0?'+':'−') + fmt(Math.abs(r.kmAdj)), r.kmAdj>=0?'pos':'neg',
-      'Beklenen km\'den sapmaya göre ceza ya da sınırlı prim'],
-    [`📋 Tramer etkisi <span class="wf-note">(${fmt(car.tramer)} · doyumlu eğri, %${Math.abs(r.tramerPct).toFixed(1)})</span>`,
-      '−' + fmt(Math.abs(r.tramerDed)), 'neg',
-      'Doyumlu eğri: hasar oranı büyüdükçe ek etkisi azalır'],
-    [`🎨 Kaporta / boya <span class="wf-note">(${car.painted} boyalı, ${car.replaced} değişen)</span>`,
-      '−' + fmt(Math.abs(r.bodyDed)), 'neg',
-      'Parça başına sabit düşüm, segment profiline göre'],
+    [`🛣 Kilometre etkisi <span class="wf-note">(${car.km.toLocaleString('tr-TR')} / beklenen ${rr.expectedKm.toLocaleString('tr-TR')})</span>`,
+      kmV, kmC, 'Beklenen km\'den sapmaya göre ceza ya da sınırlı prim'],
+    [`📋 Tramer etkisi <span class="wf-note">${tramerLbl}</span>`,
+      trV, trC, 'Doyumlu eğri: hasar oranı büyüdükçe ek etkisi azalır'],
+    [`🎨 Kaporta / boya <span class="wf-note">(${bodyKnown ? car.painted + ' boyalı, ' + car.replaced + ' değişen' : 'bilinmiyor — iyimser varsayıldı'})</span>`,
+      bdV, bdC, 'Parça başına sabit düşüm, segment profiline göre'],
     ['TOPLAM DÜZELTME', (totalAdj >= 0 ? '+' : '−') + fmt(Math.abs(totalAdj)), 'total', ''],
   ];
   $('waterfall').innerHTML = wf.map(([l,v,c,e]) =>
     `<div class="wf-item"><span>${l}${e ? `<span class="wf-exp">${e}</span>` : ''}</span><span class="${c}">${v}</span></div>`).join('');
-  $('sideTotal').textContent = fmt(r.fair);
+  $('sideTotal').textContent = rCons ? fmt(rCons.fair) + ' – ' + fmt(r.fair) : fmt(r.fair);
 }
 
 function mockAnalyze() {
+  const url = $('listingUrl').value.trim();
+  if (url) {
+    // Dürüst link akışı: sayfa ÇEKİLMEZ (bot koruması + ToS). Linkten marka/model çıkar,
+    // çapayı otomatik ara, kullanıcıyı görüntü/metin yapıştırmaya yönlendir.
+    const name = carNameFromUrl(url);
+    if (name && !$('carName').value.trim()) $('carName').value = name;
+    if (name) autoAnchor(name);
+    $('linkNote').innerHTML = name
+      ? '✓ <b>' + name.replace(/</g, '&lt;') + '</b> linkten okundu, çapa arandı. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — şimdi <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, kalan bilgileri oradan alalım.'
+      : 'Linkten marka/model çıkaramadık. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, bilgileri oradan alalım.';
+    $('dropzone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   $('newPrice').value = 1750000; $('modelYear').value = 2020; $('km').value = 145000;
   $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
   $('askPrice').value = 1250000;
@@ -1026,10 +1100,17 @@ function carNameFromText(text) {
   const words = [];
   for (const w of rest) {
     if (words.length >= 6) break;
+    // Baş/son sembolleri kırp; sembol ağırlıklı parçaları atla (OCR çöpü: «, &«&, ©, //)
+    const t = w.replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+|[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+$/g, '');
+    if (!t) continue;
+    if (((t.match(/[0-9A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length) / t.length < 0.7) continue;
+    if (t.length === 1 && !/\d/.test(t)) continue; // tek harf artığı ("A « &«& ©" vakası)
+    // Atla: başlık süsleri — model adı değildir (HATASIZ-BOYASIZ, CAM TAVAN, ACİL…)
+    if (/^(hatas[ıi]z(-boyas[ıi]z)?|boyas[ıi]z|tramersiz|de[ğg]i[şs]ensiz|temiz|acil|orj?[iı]?nal|full|cam|tavan|sunroof|emsalsiz|bak[ıi]ml[ıi])$/i.test(t)) continue;
     // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
-    if (/^(19|20)\d{2}$/.test(w) || /^(km|tl|₺)\.?,?$/i.test(w) || /[\d.](km|tl)$/i.test(w) || /^[\d.,]{4,}$/.test(w)
-        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer)$/i.test(w)) break;
-    words.push(w);
+    if (/^(19|20)\d{2}$/.test(t) || /^(km|tl|₺)\.?,?$/i.test(t) || /[\d.](km|tl)$/i.test(t) || /^[\d.,]{4,}$/.test(t)
+        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer)$/i.test(t)) break;
+    words.push(t);
   }
   return words.join(' ');
 }
@@ -1052,12 +1133,25 @@ function ocrExtract(text) {
   let year = grab(['model y[ıi]l[ıi]', 'y[ıi]l', 'model'], '((?:19[89]|20[0-2])\\d)');
   if (!year) { const m = flat.match(/\b(20[0-2]\d|19[89]\d)\b/); year = m && m[1]; }
   if (year) out.year = parseInt(year, 10);
-  // Kilometre: önce "115.900 km" kalıbı (ilanlarda yaygın), sonra "Kilometre: 115.900" etiketi
-  let km = null;
-  const kmBefore = flat.match(new RegExp(NUM + '\\s*km\\b', 'i'));
-  if (kmBefore) km = kmBefore[1];
-  else km = grab(['kilometre', 'km'], NUM);
-  if (km != null) { const v = trNum(km); if (!isNaN(v) && v !== out.year) out.km = v; }
+  // Kilometre: tüm adayları topla; binlik ayraçlı (≥1.000) olanı tercih et.
+  // Başlıklardaki "108 KM" kısaltması 108.000 demektir — GERÇEK saha vakası (Audi A3):
+  // km "108" okununca eder tamamen çarpılıyordu. <1.000 tek aday varsa ×1.000 önerilir ve işaretlenir.
+  out._flags = {};
+  const kmCands = [...flat.matchAll(new RegExp(NUM + '\\s*km\\b', 'gi'))].map(m => m[1]);
+  const kmLabeled = grab(['kilometre', 'km'], NUM);
+  if (kmLabeled != null) kmCands.push(kmLabeled);
+  const kmVals = kmCands.map(trNum).filter(v => !isNaN(v) && v !== out.year && v > 0 && v <= 2000000);
+  if (kmVals.length) {
+    const labV = kmLabeled != null ? trNum(kmLabeled) : NaN;
+    const big = kmVals.filter(v => v >= 1000);
+    if (!isNaN(labV) && labV >= 1000 && labV <= 2000000) out.km = labV;
+    else if (big.length) out.km = Math.max(...big);
+    else {
+      out.km = kmVals[0] * 1000;
+      out._flags.km = 'Metinde "' + kmVals[0].toLocaleString('tr-TR') + ' km" yazıyor — ilan dilinde bu genelde '
+        + (kmVals[0] * 1000).toLocaleString('tr-TR') + ' km demektir; öyle doldurduk, kontrol et.';
+    }
+  }
   // İlan fiyatı: etiketli öncelikli, yoksa en büyük TL/₺ tutarı
   let ask = grab(['sat[ıi][şs] fiyat[ıi]', 'ilan fiyat[ıi]', 'fiyat'], NUM + '\\s*(?:TL|₺)');
   if (ask != null) ask = trNum(ask);
@@ -1075,7 +1169,13 @@ function ocrExtract(text) {
     const cand = nums.filter(n => !excl.has(n));
     if (cand.length) ask = Math.max(...cand);
   }
-  if (ask) out.ask = ask;
+  if (ask) {
+    out.ask = ask;
+    // GERÇEK saha vakası: OCR fiyatın baş hanesini düşürebiliyor (1.525.000 → 525.000).
+    // Aralık dışı tutarı işaretle; onay ekranı zaten her durumda kontrolü kullanıcıya bırakır.
+    if (ask < 100000 || ask > 50000000)
+      out._flags.ask = 'Okunan ilan fiyatı (' + ask.toLocaleString('tr-TR') + ' TL) olağan aralığın dışında — OCR baştaki haneyi düşürmüş olabilir, kontrol et.';
+  }
   // Tramer: "tramersiz / hasar kaydı yok" → 0, yoksa etiketli tutar
   if (/tramersiz|tramer\s*(?:kayd[ıi])?\s*yok|hasar\s*(?:kayd[ıi])?\s*(?:yok|bulunmamaktad[ıi]r)|hasar\s*kay[ıi]ts[ıi]z/i.test(flat)) out.tramer = 0;
   else {
@@ -1170,10 +1270,14 @@ function showOcrConfirm(fields, rawText) {
     + '<div class="coef-grid">'
     + OCR_FIELDS.map(([k, label]) =>
       '<div><label>' + label + ' '
-      + (fields[k] !== undefined ? '<span class="found">✓ okundu</span>' : '<span class="notfound">bulunamadı</span>')
+      + (fields[k] !== undefined
+          ? (fields._flags && fields._flags[k] ? '<span class="suspect">⚠ kontrol et</span>' : '<span class="found">✓ okundu</span>')
+          : '<span class="notfound">bulunamadı</span>')
       + '</label><input type="number" inputmode="numeric" id="ocr_' + k + '" value="' + (fields[k] !== undefined ? fields[k] : '') + '"></div>').join('')
     + '</div>'
-    + '<p class="ocr-lead" style="margin-top:10px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
+    + Object.values(fields._flags || {}).map(t => '<p class="ocr-lead" style="margin-top:8px;color:var(--yellow)">⚠️ ' + t + '</p>').join('')
+    + '<p class="ocr-lead" style="margin-top:10px">🎯 <b>Tam analiz için tramer ve boyalı/değişen önemli.</b> İlanda yoksa ekspertiz/hasar bölümünün görüntüsünü de okutabilirsin; bilinmiyorsa boş bırak — dürüstçe "kısmi analiz" der, tramer için temkinli senaryo hesaplarız.</p>'
+    + '<p class="ocr-lead" style="margin-top:6px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
     + '<div style="display:flex;gap:10px;margin-top:12px">'
     + '<button class="btn" onclick="applyOcr()">✅ Onayla ve Değerle</button>'
     + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="$(\'ocrConfirm\').classList.add(\'hidden\')">Vazgeç</button>'
@@ -1183,9 +1287,13 @@ function showOcrConfirm(fields, rawText) {
 
 function applyOcr() {
   const map = { year: 'modelYear', km: 'km', tramer: 'tramer', painted: 'painted', replaced: 'replaced', ask: 'askPrice' };
+  // Hasar alanları bilinmiyorsa formda da BOŞ kalmalı — eski değer sessizce kalırsa
+  // "bilinmiyor" durumu kaybolur, iki senaryo ve kalite etiketi devreye giremez.
+  const clearable = new Set(['tramer', 'painted', 'replaced']);
   for (const k in map) {
     const v = $('ocr_' + k).value;
     if (v !== '') $(map[k]).value = v;
+    else if (clearable.has(k)) $(map[k]).value = '';
   }
   $('carName').value = $('ocr_name').value.trim();
   autoAnchor($('carName').value); // isimden çapayı sistem bulur; bulamazsa açıkça söyler

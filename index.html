@@ -983,10 +983,15 @@ function calc() {
     const pill = $('verdictPill');
     pill.className = 'verdict-pill ' + cls;
     pill.textContent = verdict;
+    // Aşırı düşük ilan fiyatı = klasik OCR baş-hane kaybı sinyali (GERÇEK vaka: 1.525.000 → 525.000)
+    const ocrTruncWarn = gap <= -40
+      ? '<br>⚠️ <b>İlan fiyatı edere göre aşırı düşük.</b> Görüntüden okunduysa OCR fiyatın baş hanesini düşürmüş olabilir (örn. 1.525.000 → 525.000) — ilandaki fiyatı kontrol et. Fiyat doğruysa da acele etme: SBM sorgusu + ekspertiz şart.'
+      : '';
     $('verdictMsg').innerHTML = (gap >= 0
       ? `Tahmini rayiç değerin <b>%${gap.toFixed(0)}</b> üzerinde — yaklaşık <b>${fmt(Math.abs(diff))}</b> fazla fiyatlandırılmış.`
       : `Tahmini rayiç değerin <b>%${Math.abs(gap).toFixed(0)}</b> altında — sebebini araştırmakta fayda var.`)
-      + (rCons ? ' <span class="wf-note">(karar temkinli senaryoya göre)</span>' : '');
+      + (rCons ? ' <span class="wf-note">(karar temkinli senaryoya göre)</span>' : '')
+      + ocrTruncWarn;
 
     const offer = Math.min(rr.fair * 1.02, askPrice);
     $('offer').textContent = fmt(offer);
@@ -1110,6 +1115,9 @@ function carNameFromText(text) {
     // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
     if (/^(19|20)\d{2}$/.test(t) || /^(km|tl|₺)\.?,?$/i.test(t) || /[\d.](km|tl)$/i.test(t) || /^[\d.,]{4,}$/.test(t)
         || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer)$/i.test(t)) break;
+    // "108 KM" gibi sayı+birim ikilisinde sayı model adına sızmasın (GERÇEK vaka: "TFSI 108")
+    const next = rest[rest.indexOf(w) + 1] || '';
+    if (/^\d{1,3}$/.test(t) && /^(km|tl|₺)/i.test(next.replace(/^[^A-Za-z₺]+/, ''))) break;
     words.push(t);
   }
   return words.join(' ');

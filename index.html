@@ -273,6 +273,28 @@
 
   /* Görüntüden analiz (OCR) */
   .ocr-card { margin-bottom: 20px; }
+  /* 3 adımlı akış göstergesi — kullanıcı nerede olduğunu hep bilsin */
+  .steps { display: flex; gap: 8px; margin-bottom: 14px; }
+  .step { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--muted);
+    padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--card2);
+    flex: 1; justify-content: center; }
+  .step .n { width: 20px; height: 20px; border-radius: 50%; background: var(--border); color: var(--text);
+    display: grid; place-items: center; font-size: 11px; flex: none; }
+  .step.active { border-color: var(--accent); color: var(--text); background: rgba(77,163,255,.08); }
+  .step.active .n { background: var(--accent); color: #08101f; }
+  .step.done { color: var(--green); border-color: rgba(62,207,142,.3); }
+  .step.done .n { background: rgba(62,207,142,.2); color: var(--green); }
+  /* Eksik alan vurgusu — eksik veri kullanıcının ayağına gider */
+  .field-attn { border-color: var(--yellow) !important; box-shadow: 0 0 0 3px rgba(245,196,81,.25); }
+  .fix-link { background: none; border: none; color: var(--yellow); text-decoration: underline; cursor: pointer;
+    font: inherit; font-size: inherit; font-weight: 700; padding: 0; }
+  .fix-link:hover { color: var(--text); }
+  /* İkincil giriş yolları (görüntü birincil) */
+  .alt-input { border-top: 1px solid var(--border); margin-top: 12px; }
+  .alt-input summary { cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 600; padding: 9px 0; list-style: none; }
+  .alt-input summary::before { content: '▸ '; }
+  .alt-input[open] summary::before { content: '▾ '; }
+  .alt-input summary:hover { color: var(--accent); }
   .dropzone {
     border: 2px dashed var(--border); border-radius: 12px; padding: 22px; text-align: center;
     cursor: pointer; transition: border-color .15s, background .15s;
@@ -419,25 +441,36 @@
   <!-- ================= DEĞERLEME MODU ================= -->
   <div id="modeVal">
     <div class="card ocr-card">
-      <h2>📷 Görüntüden veya Metinden Analiz</h2>
+      <h2>📷 İlan Analizi</h2>
+      <div class="steps">
+        <div class="step active" id="stepUpload"><span class="n">1</span> Yükle</div>
+        <div class="step" id="stepCheck"><span class="n">2</span> Kontrol et</div>
+        <div class="step" id="stepResult"><span class="n">3</span> Sonuç</div>
+      </div>
       <div class="dropzone" id="dropzone">
         <div class="dz-ic">📷</div>
-        <p><b>İlanın ekran görüntüsünü</b> seç, buraya sürükle ya da panodan yapıştır.</p>
+        <p><b>İlanın ekran görüntüsünü yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır.
+        Tramer/boya ilanda yoksa <b>ekspertiz görüntüsünü de</b> art arda yükleyebilirsin; alanlar birleştirilir.</p>
         <p class="dz-note">🔒 Görüntü cihazından çıkmaz — okuma tamamen tarayıcında yapılır (OCR).
         Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
       </div>
       <input type="file" id="ocrFile" accept="image/*" style="display:none">
-      <label style="margin-top:14px">📋 Ya da ilan metnini yapıştır <span class="wf-note">(açıklama, özellikler, ekspertiz bilgisi — ne varsa)</span></label>
-      <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
-      <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
       <div class="ocr-status hidden" id="ocrStatus"></div>
       <div class="ocr-confirm hidden" id="ocrConfirm"></div>
-      <div class="link-bar" style="margin-top:14px">
-        <input type="text" id="listingUrl" placeholder="Ya da ilan linkini yapıştır — marka/model ve çapayı linkten buluruz">
-        <button onclick="mockAnalyze()">Analiz Et</button>
-      </div>
-      <p class="link-note" id="linkNote">İlan sayfasını çekmeyiz (bot koruması + site kuralları). Link yapıştırırsan marka/modeli ve çapayı
-      senin için doldururuz; bilgiler için ekran görüntüsünü ya da metni yapıştırman gerekir. Boşken buton örnek ilanla doldurur (demo).</p>
+      <details class="alt-input">
+        <summary>📋 Metin yapıştırarak analiz</summary>
+        <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
+        <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
+      </details>
+      <details class="alt-input">
+        <summary>🔗 İlan linkiyle başla</summary>
+        <div class="link-bar" style="margin-top:8px">
+          <input type="text" id="listingUrl" placeholder="İlan linkini yapıştır — marka/model ve çapayı linkten buluruz">
+          <button onclick="mockAnalyze()">Analiz Et</button>
+        </div>
+        <p class="link-note" id="linkNote">İlan sayfasını çekmeyiz (bot koruması + site kuralları). Link yapıştırırsan marka/modeli ve çapayı
+        senin için doldururuz; bilgiler için ekran görüntüsünü ya da metni yapıştırman gerekir. Boşken buton örnek ilanla doldurur (demo).</p>
+      </details>
     </div>
 
     <div class="result-grid">
@@ -717,7 +750,9 @@ function gapClass(gap) {
 const ANCHOR_DB = [
   { ad: 'Audi A3 Sportback 35 TFSI Advanced (premium)', fiyat: 3125000, model: /\ba3\b/i },
   { ad: 'Peugeot Rifter Allure 1.5 BlueHDi (ticari/camlı van)', fiyat: 1663594, model: /rifter|partner/i },
-  { ad: 'VW Caddy Impression 2.0 TDI (ticari/kombi)', fiyat: 1820438, model: /caddy/i, trim: /impression|trendline/i },
+  { ad: 'Citroen Berlingo Plus Manuel 1.5 BlueHDi (ticari/camlı van)', fiyat: 1779000, model: /berlingo/i },
+  { ad: 'Renault Kangoo Multix Equilibre (Dokker muadili — Dokker üretimde yok, varsayım)', fiyat: 1700000, model: /dokker|kangoo/i },
+  { ad: 'VW Caddy Impression/Life 2.0 TDI (ticari/kombi)', fiyat: 1820438, model: /caddy/i, trim: /impression|trendline|life/i },
   { ad: 'VW Caddy Style 2.0 TDI (ticari/kombi)', fiyat: 2194500, model: /caddy/i, trim: /style/i },
   { ad: 'Dacia Sandero Essential TCe 100', fiyat: 1295000, model: /sandero(?!\s*stepway)/i, trim: /essential/i },
   { ad: 'Dacia Sandero Expression TCe 100', fiyat: 1426000, model: /sandero(?!\s*stepway)/i, trim: /expression/i },
@@ -910,7 +945,7 @@ function setSegment(key) {
 const SEG_HINTS = [
   { seg: 'ev', re: /\b(tesla|togg|model [3sxy]|id\.\s?\d|e-?tron|eq[abces]|ioniq|kona electric|enyaq|atto|dolphin|seal\b|leaf|zoe|spring|born|mgs?4|t10x)\b/i },
   { seg: 'premium', re: /\b(audi|bmw|mercedes|porsche|volvo|land ?rover|range ?rover|jaguar|lexus|maserati|alfa ?romeo|mini\b|ds ?[3-9])\b/i },
-  { seg: 'ticari', re: /\b(doblo|courier|caddy|transit|connect|berlingo|kangoo|partner|fiorino|combo|express\b|rifter|proace|vito|transporter|crafter|master\b|ducato|boxer|jumper|sprinter)\b/i },
+  { seg: 'ticari', re: /\b(doblo|courier|caddy|transit|connect|berlingo|kangoo|dokker|partner|fiorino|combo|express\b|rifter|proace|vito|transporter|crafter|master\b|ducato|boxer|jumper|sprinter)\b/i },
 ];
 function suggestSegment(name) {
   const el = $('segSuggest');
@@ -926,6 +961,23 @@ function suggestSegment(name) {
       + '<button class="seg-apply" onclick="setSegment(\'binek\')">Binek (C/D) profiline dön</button>';
     el.classList.remove('hidden');
   } else el.classList.add('hidden');
+}
+
+// 3 adımlı akış göstergesi
+function setStep(n) {
+  [['stepUpload', 1], ['stepCheck', 2], ['stepResult', 3]].forEach(([id, i]) => {
+    $(id).classList.toggle('active', i === n);
+    $(id).classList.toggle('done', i < n);
+  });
+}
+
+// Eksik alana götür ve vurgula — kullanıcı formu aramasın, eksik ayağına gitsin
+function focusField(id) {
+  const el = $(id);
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('field-attn');
+  try { el.focus({ preventScroll: true }); } catch {}
+  setTimeout(() => el.classList.remove('field-attn'), 3500);
 }
 
 // Araç başlık bandı — analiz edilen aracın kimliği (spec çipleri + tarih)
@@ -1010,7 +1062,7 @@ function calc() {
     $('gapBand').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
     $('verdictPill').classList.add('hidden');
-    $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır. Aşağıdan hazır çapa seç ya da elle gir — ilanda yazmaz, bu yüzden soruyoruz.';
+    $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır — ilanda yazmaz, bu yüzden soruyoruz. <button class="fix-link" onclick="focusField(\'anchorSelect\')">Çapa alanına git →</button>';
     $('offer').textContent = '—';
     $('dealRange').textContent = '—';
     $('waterfall').innerHTML = '';
@@ -1039,20 +1091,23 @@ function calc() {
 
   // Analiz kalitesi etiketi — uydurma skor değil, girilen verinin eksiksizliği
   const missing = [];
-  if (!kmKnown) missing.push('kilometre (yaşa göre ~' + car.km.toLocaleString('tr-TR') + ' km varsayıldı)');
-  if (!tramerKnown) missing.push('tramer (iki senaryo gösterildi)');
-  if (!bodyKnown) missing.push('boyalı/değişen (iyimser varsayıldı)');
-  if (!heavyKnown) missing.push('ağır hasar kaydı (iyimser varsayıldı)');
-  if (!(askPrice > 0)) missing.push('ilan fiyatı (karşılaştırma yok)');
+  if (!kmKnown) missing.push(['kilometre (yaşa göre ~' + car.km.toLocaleString('tr-TR') + ' km varsayıldı)', 'km']);
+  if (!tramerKnown) missing.push(['tramer (iki senaryo gösterildi)', 'tramer']);
+  if (!bodyKnown) missing.push(['boyalı/değişen (iyimser varsayıldı)', 'painted']);
+  if (!heavyKnown) missing.push(['ağır hasar kaydı (iyimser varsayıldı)', 'heavyDamage']);
+  if (!(askPrice > 0)) missing.push(['ilan fiyatı (karşılaştırma yok)', 'askPrice']);
   const pill = $('qualPill'), qn = $('qualNote');
   if (r.fair > 0) {
     pill.classList.remove('hidden', 'full', 'partial');
     pill.classList.add(missing.length ? 'partial' : 'full');
     pill.textContent = missing.length ? 'KISMİ ANALİZ' : 'TAM ANALİZ';
+    setStep(3);
   } else pill.classList.add('hidden');
   if (missing.length && r.fair > 0) {
     qn.classList.remove('hidden');
-    qn.innerHTML = 'Eksik veri: ' + missing.join(' · ') + '. <b>Eksiksiz veri, daha isabetli eder demektir.</b>';
+    qn.innerHTML = 'Eksik veri: '
+      + missing.map(([l, f]) => `<button class="fix-link" onclick="focusField('${f}')">${l}</button>`).join(' · ')
+      + '. <b>Eksiksiz veri, daha isabetli eder demektir</b> — eksiğe tıkla, alana götürelim.';
   } else qn.classList.add('hidden');
   const heroName = r.fair > 0 ? renderHero(car) : null;
   if (r.fair > 0) {
@@ -1383,6 +1438,7 @@ async function handleImage(source) {
   status.classList.remove('hidden');
   $('ocrConfirm').classList.add('hidden');
   status.textContent = 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
+  setStep(2);
   try {
     await loadTesseract();
     const pre = await upscaleForOcr(source);
@@ -1459,6 +1515,7 @@ function mergeOcr(fields, srcLabel, rawText) {
 }
 
 function showOcrConfirm() {
+  setStep(2);
   const p = pendingOcr, fields = p.fields;
   const c = $('ocrConfirm');
   c.classList.remove('hidden');

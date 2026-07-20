@@ -521,11 +521,6 @@
     <div class="card ocr-card">
       <h2 class="oc-title">Hemen analiz et</h2>
       <p class="oc-sub">İlan ekran görüntüsü yükle, metni ya da linki yapıştır — okuduklarımızı sen onaylarsın.</p>
-      <div class="steps">
-        <div class="step active" id="stepUpload"><span class="n">1</span> Yükle</div>
-        <div class="step" id="stepCheck"><span class="n">2</span> Kontrol et</div>
-        <div class="step" id="stepResult"><span class="n">3</span> Sonuç</div>
-      </div>
       <div class="oc-tabs">
         <button type="button" class="oc-tab active" data-pane="paneImg" onclick="ocTab('paneImg', this)">📷 Ekran Görüntüsü</button>
         <button type="button" class="oc-tab" data-pane="paneText" onclick="ocTab('paneText', this)">📋 Metin</button>
@@ -1129,14 +1124,6 @@ function clearHistory() {
   renderHistory(); histBadge();
 }
 
-// 3 adımlı akış göstergesi
-function setStep(n) {
-  [['stepUpload', 1], ['stepCheck', 2], ['stepResult', 3]].forEach(([id, i]) => {
-    $(id).classList.toggle('active', i === n);
-    $(id).classList.toggle('done', i < n);
-  });
-}
-
 // Eksik alana götür ve vurgula — kullanıcı formu aramasın, eksik ayağına gitsin
 function focusField(id) {
   const el = $(id);
@@ -1281,7 +1268,6 @@ function calc() {
     pill.classList.remove('hidden', 'full', 'partial');
     pill.classList.add(missing.length ? 'partial' : 'full');
     pill.textContent = missing.length ? 'KISMİ ANALİZ' : 'TAM ANALİZ';
-    setStep(3);
   } else pill.classList.add('hidden');
   if (missing.length && r.fair > 0) {
     qn.classList.remove('hidden');
@@ -1625,7 +1611,6 @@ async function handleImage(source) {
   status.classList.remove('hidden');
   $('ocrConfirm').classList.add('hidden');
   status.textContent = 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
-  setStep(2);
   try {
     try { lastThumb = await makeThumb(source); } catch {}
     await loadTesseract();
@@ -1704,7 +1689,6 @@ function mergeOcr(fields, srcLabel, rawText) {
 }
 
 function showOcrConfirm() {
-  setStep(2);
   const p = pendingOcr, fields = p.fields;
   const c = $('ocrConfirm');
   c.classList.remove('hidden');

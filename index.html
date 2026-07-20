@@ -409,7 +409,7 @@
   .beta-note b { color: var(--yellow); font-weight: 700; }
 
   /* ---- Tanıtım (uygulamanın altında) ---- */
-  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 900px; margin: 34px auto 0; }
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 34px auto 0; }
   .principle { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
   .principle .ic { font-size: 22px; }
   .principle h3 { font-size: 15px; margin: 8px 0 5px; }
@@ -757,15 +757,7 @@
     <div class="principle"><div class="ic">🔍</div><h3>Şeffaf</h3><p>Kara kutu yok. Her değerleme, sıfır fiyatından son kuruşa kadar kalem kalem açıklanır: yaş, kilometre, tramer, kaporta.</p></div>
     <div class="principle"><div class="ic">⚖️</div><h3>Tarafsız</h3><p>İlan sitelerinden ve satıcılardan gelir almayız. Ederi şişirmek için kimseye teşvikimiz yok — varlık sebebimiz bu.</p></div>
     <div class="principle"><div class="ic">🤝</div><h3>Ücretsiz</h3><p>Değer bilgisi kamu malıdır. Alıcının elinde "bak, bunun ederi bu" diyen bir belge olsun diye varız.</p></div>
-  </div>
-
-  <div class="how">
-    <h2>Nasıl çalışır?</h2>
-    <div class="steps">
-      <div class="step"><div class="n">1</div><p>Aracın bilgilerini gir ya da ilanın ekran görüntüsünü yapıştır — OCR tarayıcında okur, sen onaylarsın.</p></div>
-      <div class="step"><div class="n">2</div><p>Motor, aracın ederini hesaplar — gerekçesiyle birlikte.</p></div>
-      <div class="step"><div class="n">3</div><p>İlan fiyatıyla arasındaki makası gör, pazarlığa bilerek git.</p></div>
-    </div>
+    <div class="principle"><div class="ic">🛡</div><h3>Dürüst</h3><p>Gerçek veri yoksa gösterge de yok: güven skoru ve piyasa trendi, veri eşiği dolunca yayınlanır.</p></div>
   </div>
 
   <footer>
@@ -1900,14 +1892,6 @@ histBadge();
 calc();
 </script>
 
-<div class="trust-strip">
-  <div class="trust"><div class="ic">⚖️</div><div><b>Tarafsız</b>
-    <p>Hiçbir ilan sitesi, galeri veya satıcıdan gelir almayız — tarafsızlık varoluş sebebimiz.</p></div></div>
-  <div class="trust"><div class="ic">🔍</div><div><b>Şeffaf</b>
-    <p>Her değer kalem kalem gerekçesiyle gösterilir; katsayılar açık ve düzenlenebilir — kara kutu yok.</p></div></div>
-  <div class="trust"><div class="ic">🛡</div><div><b>Dürüst</b>
-    <p>Gerçek veri yoksa gösterge de yok: güven skoru ve piyasa trendi, veri eşiği dolunca yayınlanır.</p></div></div>
-</div>
 <p class="result-note">* Hesaplanan rayiç değer bir tahmindir; kesin değer için bağımsız ekspertiz önerilir.</p>
 
 <div class="site-footer">

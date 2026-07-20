@@ -7,10 +7,10 @@
 <meta name="description" content="Ederi: Türkiye'nin ilk bağımsız dijital rayiç platformu. Satmadan önce değerine, almadan önce ederine bak. Bağımsız, şeffaf, ücretsiz — rayiç değeri kalem kalem gerekçesiyle gösterir.">
 <style>
   :root {
-    --bg: #0b111b; --card: #121a26; --card2: #1a2433;
-    --text: #e8edf5; --muted: #8a97ad; --accent: #4da3ff;
-    --green: #3ecf8e; --yellow: #f5c451; --orange: #ff9f43; --red: #ff6b6b;
-    --border: #243044;
+    --bg: #eef2f8; --card: #ffffff; --card2: #f2f6fb;
+    --text: #17233c; --muted: #5d6c85; --accent: #2563eb;
+    --green: #15973f; --yellow: #b45309; --orange: #c2410c; --red: #dc2626;
+    --border: #dde5f0; --dark: #0d1b3d; --dark2: #13265c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -21,7 +21,7 @@
 
   /* Yapışkan üst bar */
   .topbar { position: sticky; top: 0; z-index: 50; margin: 0 -16px 0;
-    background: rgba(11,17,27,.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(255,255,255,.92); box-shadow: 0 1px 0 rgba(23,35,60,.06); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
   .topbar-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding: 10px 20px; }
   .tb-logo { width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex: none; }
@@ -36,7 +36,7 @@
   .tb-icon { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card);
     color: var(--muted); font-size: 16px; cursor: default; display: grid; place-items: center; }
   .btn-login { padding: 8px 18px; border-radius: 10px; border: none; background: var(--accent);
-    color: #08101f; font-weight: 700; font-size: 13px; cursor: default; opacity: .55; font-family: inherit; }
+    color: #fff; font-weight: 700; font-size: 13px; cursor: default; opacity: .8; font-family: inherit; }
 
   /* Tabs */
   .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; }
@@ -45,7 +45,7 @@
     background: var(--card); color: var(--muted); font-size: 14px; font-weight: 700; cursor: pointer;
     font-family: inherit; min-height: 48px;
   }
-  .tab.active { background: var(--accent); color: #08101f; border-color: var(--accent); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   /* Varlık seçici */
@@ -63,14 +63,14 @@
     vertical-align: middle;
   }
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(23,35,60,.05); border-radius: 14px; padding: 20px; }
   .card h2 { font-size: 14px; margin-bottom: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; }
 
   .link-bar { display: flex; gap: 10px; margin-bottom: 6px; }
   .link-bar input { flex: 1; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 16px; }
   .link-bar button, .btn {
     padding: 12px 22px; border-radius: 10px; border: none; background: var(--accent);
-    color: #08101f; font-weight: 700; font-size: 15px; cursor: pointer; min-height: 48px; font-family: inherit;
+    color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; min-height: 48px; font-family: inherit;
   }
   .link-bar button:hover, .btn:hover { filter: brightness(1.1); }
   .link-bar button:focus-visible, .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
@@ -113,10 +113,10 @@
   .decision { border-radius: 16px; padding: 22px; margin-bottom: 0;
     border: 1px solid var(--border); background: var(--card); }
   .compare { display: flex; justify-content: center; align-items: stretch; gap: 14px; margin: 0 0 18px; }
-  .cmp-box { flex: 1; background: rgba(255,255,255,.02); border: 1px solid var(--border);
+  .cmp-box { flex: 1; background: rgba(23,35,60,.02); border: 1px solid var(--border);
     border-radius: 14px; padding: 20px 16px 16px; display: flex; flex-direction: column; justify-content: flex-start; }
-  .cmp-box.askside { border-color: rgba(255,107,107,.3); background: linear-gradient(165deg, rgba(255,107,107,.08), rgba(255,255,255,.01)); }
-  .cmp-box.fairside { border-color: rgba(62,207,142,.3); background: linear-gradient(165deg, rgba(62,207,142,.08), rgba(255,255,255,.01)); }
+  .cmp-box.askside { border-color: rgba(255,107,107,.3); background: linear-gradient(165deg, rgba(255,107,107,.08), rgba(23,35,60,.01)); }
+  .cmp-box.fairside { border-color: rgba(62,207,142,.3); background: linear-gradient(165deg, rgba(62,207,142,.08), rgba(23,35,60,.01)); }
   .cmp-box .k { font-size: 11px; letter-spacing: .9px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
   .cmp-box .v.ask { font-size: 34px; font-weight: 800; color: var(--text); line-height: 1.1; }
   .cmp-box .v.fair { font-size: 34px; font-weight: 800; color: var(--green); line-height: 1.1; }
@@ -176,7 +176,7 @@
   .seg-apply { margin-left: 8px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--accent);
     background: rgba(77,163,255,.12); color: var(--accent); font-size: 11px; font-weight: 700;
     cursor: pointer; font-family: inherit; }
-  .seg-apply:hover { background: var(--accent); color: #08101f; }
+  .seg-apply:hover { background: var(--accent); color: #fff; }
   .cmp-box .v.fair.range { font-size: 21px; line-height: 1.3; }
 
   /* Güven şeridi */
@@ -201,7 +201,7 @@
 
   /* Alt widget satırı */
   .widget-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
-  .widget { background: rgba(255,255,255,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .widget { background: rgba(23,35,60,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
   .widget-h { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
   .widget .val { font-size: 18px; font-weight: 800; color: var(--green); }
   .widget .sub { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
@@ -272,7 +272,66 @@
   .coef-grid input { padding: 7px 10px; font-size: 13px; }
 
   /* Görüntüden analiz (OCR) */
-  .ocr-card { margin-bottom: 20px; }
+  /* Kenar çubuklu yerleşim (20.07 tasarım revizyonu) */
+  .shell { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; padding-top: 20px; }
+  .side { position: sticky; top: 70px; display: flex; flex-direction: column; gap: 14px; }
+  .side-hero { background: linear-gradient(165deg, var(--dark), var(--dark2)); color: #fff;
+    border-radius: 16px; padding: 20px 18px 8px; overflow: hidden; }
+  .side-hero .big { font-size: 21px; line-height: 1.25; margin: 0 0 8px; color: #fff; }
+  .side-hero .big em { color: #7aa4ff; font-style: normal; }
+  .side-hero .tagline { font-size: 12px; color: #b9c6e4; line-height: 1.5; margin: 0; }
+  .sh-car { width: 82%; margin: 10px auto 0; display: block; }
+  .side-nav { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 8px;
+    display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 3px rgba(23,35,60,.05); }
+  .sn { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px;
+    font-weight: 600; color: var(--muted); text-decoration: none; }
+  .sn:hover { background: var(--card2); color: var(--text); }
+  .sn.active { background: rgba(37,99,235,.08); color: var(--accent); }
+  .sn.soon { opacity: .55; cursor: default; pointer-events: none; }
+  .sn .soon-lbl { margin-left: auto; }
+  .sn-badge { margin-left: auto; background: rgba(37,99,235,.12); color: var(--accent); border-radius: 10px;
+    font-size: 11px; font-weight: 800; padding: 1px 8px; }
+  .howto { background: rgba(37,99,235,.05); border: 1px solid rgba(37,99,235,.15); border-radius: 14px; padding: 14px 16px; }
+  .howto b { display: block; font-size: 13px; margin-bottom: 10px; }
+  .ht { display: flex; gap: 9px; align-items: flex-start; font-size: 12px; color: var(--muted); line-height: 1.45; margin-bottom: 8px; }
+  .ht .n { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10.5px;
+    font-weight: 800; display: grid; place-items: center; flex: none; margin-top: 1px; }
+  .ht-link { font-size: 12px; font-weight: 700; color: var(--accent); text-decoration: none; }
+  .maincol { min-width: 0; }
+  .top-row { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: stretch; margin-bottom: 20px; }
+  .trust-card { background: linear-gradient(165deg, var(--dark), var(--dark2)); color: #fff; border-radius: 16px;
+    padding: 22px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; justify-content: center; }
+  .trust-card .tc-ic { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #7aa4ff; color: #7aa4ff;
+    display: grid; place-items: center; font-size: 20px; }
+  .trust-card b { font-size: 14.5px; }
+  .trust-card p { font-size: 12px; color: #b9c6e4; line-height: 1.6; }
+  .tc-badge { font-size: 11px; font-weight: 700; color: #9fe8c1; background: rgba(62,207,142,.12);
+    border: 1px solid rgba(62,207,142,.3); border-radius: 20px; padding: 5px 12px; }
+  .oc-title { font-size: 19px !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important; margin-bottom: 4px !important; }
+  .oc-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+  .oc-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .oc-tab { padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card);
+    color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .oc-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,.07); }
+  .sup-line { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+  .offer-band { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 14px 18px;
+    background: rgba(62,207,142,.07); border: 1px solid rgba(62,207,142,.3); border-radius: 12px; flex-wrap: wrap; }
+  .offer-band b { font-size: 13px; color: var(--green); display: block; }
+  .offer-band .ob-sub { font-size: 11px; color: var(--muted); }
+  .offer-band .ob-val { font-size: 20px; font-weight: 800; color: var(--green); margin-left: auto; }
+  .hist-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border);
+    font-size: 13px; flex-wrap: wrap; }
+  .hist-row:last-child { border-bottom: none; }
+  .hist-row .h-name { font-weight: 700; min-width: 0; }
+  .hist-row .h-meta { color: var(--muted); font-size: 12px; }
+  .hist-row .h-eder { margin-left: auto; font-weight: 800; color: var(--green); }
+  .ocr-card { margin-bottom: 0; }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; padding-top: 12px; }
+    .side { position: static; }
+    .howto { display: none; }
+    .top-row { grid-template-columns: 1fr; }
+  }
   /* 3 adımlı akış göstergesi — kullanıcı nerede olduğunu hep bilsin */
   .steps { display: flex; gap: 8px; margin-bottom: 14px; }
   .step { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--muted);
@@ -281,7 +340,7 @@
   .step .n { width: 20px; height: 20px; border-radius: 50%; background: var(--border); color: var(--text);
     display: grid; place-items: center; font-size: 11px; flex: none; }
   .step.active { border-color: var(--accent); color: var(--text); background: rgba(77,163,255,.08); }
-  .step.active .n { background: var(--accent); color: #08101f; }
+  .step.active .n { background: var(--accent); color: #fff; }
   .step.done { color: var(--green); border-color: rgba(62,207,142,.3); }
   .step.done .n { background: rgba(62,207,142,.2); color: var(--green); }
   /* Eksik alan vurgusu — eksik veri kullanıcının ayağına gider */
@@ -415,14 +474,32 @@
   </div>
 </div>
 
-<section class="hero">
-  <h1 class="big">Gerçek değeri bilmeden <em>karar verme.</em></h1>
-  <p class="tagline">Satmadan önce değerine, almadan önce ederine bak.</p>
-  <p class="lead">Türkiye'nin ilk bağımsız dijital rayiç platformu — yapay zekâ destekli, şeffaf, her zaman ücretsiz.
-  Hedefimiz: <b>bir şey almadan önce ilk bakılan yer</b> olmak.</p>
-</section>
+<div class="shell wrap">
 
-<div class="wrap">
+<aside class="side">
+  <div class="side-hero">
+    <h1 class="big">Gerçek değeri bilmeden <em>karar verme.</em></h1>
+    <p class="tagline">Satmadan önce değerine, almadan önce ederine bak.</p>
+    <svg class="sh-car" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g stroke="#7aa4ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"><path d="M14 40 L20 27 Q22 22 28 22 L66 22 Q71 22 75 26 L84 34 Q94 36 96 40 L96 44 Q96 46 94 46 L88 46"/><line x1="38" y1="46" x2="70" y2="46"/><circle cx="30" cy="46" r="6"/><circle cx="78" cy="46" r="6"/><line x1="46" y1="22" x2="46" y2="33"/><path d="M24 33 L88 33"/></g><g stroke="#3ecf8e" stroke-width="3.5" fill="none" stroke-linecap="round"><circle cx="98" cy="20" r="9"/><line x1="105" y1="27" x2="112" y2="34"/><polyline points="93,22 96,18 100,21 103,15"/></g></svg>
+  </div>
+  <nav class="side-nav">
+    <a class="sn active" href="#uygulama">🏠 Yeni Analiz</a>
+    <a class="sn" href="#" id="navHistory" onclick="toggleHistory(event)">🗂 Geçmiş Analizlerim <span class="sn-badge hidden" id="histCount"></span></a>
+    <a class="sn soon">❤️ Favorilerim <span class="soon-lbl">YAKINDA</span></a>
+    <a class="sn soon">🗄 Fiyat Arşivi <span class="soon-lbl">YAKINDA</span></a>
+    <a class="sn soon">⚖️ Karşılaştırmalarım <span class="soon-lbl">YAKINDA</span></a>
+  </nav>
+  <div class="howto">
+    <b>Nasıl çalışır?</b>
+    <div class="ht"><span class="n">1</span> İlan görüntüsünü yükle ya da metni yapıştır</div>
+    <div class="ht"><span class="n">2</span> Okunanları kontrol et, eksiği tamamla</div>
+    <div class="ht"><span class="n">3</span> Rayiç değeri kalem kalem hesaplarız</div>
+    <div class="ht"><span class="n">4</span> Sonucu ve teklif önerini al</div>
+    <a class="ht-link" href="#metodoloji">Detaylı bilgi →</a>
+  </div>
+</aside>
+
+<main class="maincol">
 
 
   <div class="assets" id="uygulama">
@@ -440,37 +517,60 @@
 
   <!-- ================= DEĞERLEME MODU ================= -->
   <div id="modeVal">
+   <div class="top-row">
     <div class="card ocr-card">
-      <h2>📷 İlan Analizi</h2>
+      <h2 class="oc-title">Hemen analiz et</h2>
+      <p class="oc-sub">İlan ekran görüntüsü yükle, metni ya da linki yapıştır — okuduklarımızı sen onaylarsın.</p>
       <div class="steps">
         <div class="step active" id="stepUpload"><span class="n">1</span> Yükle</div>
         <div class="step" id="stepCheck"><span class="n">2</span> Kontrol et</div>
         <div class="step" id="stepResult"><span class="n">3</span> Sonuç</div>
       </div>
-      <div class="dropzone" id="dropzone">
-        <div class="dz-ic">📷</div>
-        <p><b>İlanın ekran görüntüsünü yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır.
-        Tramer/boya ilanda yoksa <b>ekspertiz görüntüsünü de</b> art arda yükleyebilirsin; alanlar birleştirilir.</p>
-        <p class="dz-note">🔒 Görüntü cihazından çıkmaz — okuma tamamen tarayıcında yapılır (OCR).
-        Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
+      <div class="oc-tabs">
+        <button type="button" class="oc-tab active" data-pane="paneImg" onclick="ocTab('paneImg', this)">📷 Ekran Görüntüsü</button>
+        <button type="button" class="oc-tab" data-pane="paneText" onclick="ocTab('paneText', this)">📋 Metin</button>
+        <button type="button" class="oc-tab" data-pane="paneLink" onclick="ocTab('paneLink', this)">🔗 İlan Linki</button>
       </div>
-      <input type="file" id="ocrFile" accept="image/*" style="display:none">
-      <div class="ocr-status hidden" id="ocrStatus"></div>
-      <div class="ocr-confirm hidden" id="ocrConfirm"></div>
-      <details class="alt-input">
-        <summary>📋 Metin yapıştırarak analiz</summary>
+      <div id="paneImg">
+        <div class="dropzone" id="dropzone">
+          <div class="dz-ic">📷</div>
+          <p><b>İlanın ekran görüntüsünü yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır.
+          Tramer/boya ilanda yoksa <b>ekspertiz görüntüsünü de</b> art arda yükleyebilirsin; alanlar birleştirilir.</p>
+          <p class="dz-note">🔒 Görüntü cihazından çıkmaz — okuma tamamen tarayıcında yapılır (OCR).
+          Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
+        </div>
+        <p class="sup-line">Her siteden görüntüyle çalışır: <b>arabam.com · sahibinden.com · letgo · facebook</b> — hepsi, çünkü görüntü senden gelir.</p>
+      </div>
+      <div id="paneText" class="hidden">
         <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
         <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
-      </details>
-      <details class="alt-input">
-        <summary>🔗 İlan linkiyle başla</summary>
-        <div class="link-bar" style="margin-top:8px">
+      </div>
+      <input type="file" id="ocrFile" accept="image/*" style="display:none">
+      <div id="paneLink" class="hidden">
+        <div class="link-bar" style="margin-top:4px">
           <input type="text" id="listingUrl" placeholder="İlan linkini yapıştır — marka/model ve çapayı linkten buluruz">
           <button onclick="mockAnalyze()">Analiz Et</button>
         </div>
         <p class="link-note" id="linkNote">İlan sayfasını çekmeyiz (bot koruması + site kuralları). Link yapıştırırsan marka/modeli ve çapayı
         senin için doldururuz; bilgiler için ekran görüntüsünü ya da metni yapıştırman gerekir. Boşken buton örnek ilanla doldurur (demo).</p>
-      </details>
+      </div>
+      <div class="ocr-status hidden" id="ocrStatus"></div>
+      <div class="ocr-confirm hidden" id="ocrConfirm"></div>
+    </div>
+
+    <aside class="trust-card">
+      <div class="tc-ic">🛡</div>
+      <b>Tarafsız · Şeffaf · Güvenilir</b>
+      <p>Hiçbir firma veya satıcıdan komisyon almayız. Tüm hesaplamalar açık ve anlaşılır şekilde gösterilir — kara kutu yok.</p>
+      <div class="tc-badge">BETA v0.9 · <span id="tcCalib">—</span> gerçek ilanla kalibrasyon</div>
+    </aside>
+   </div><!-- /top-row -->
+
+    <div class="card hidden" id="historyPanel">
+      <h2>🗂 Geçmiş Analizlerim</h2>
+      <p class="link-note">🔒 Yalnızca bu cihazda saklanır — sunucuya gönderilmez.
+      <button class="fix-link" onclick="clearHistory()">Geçmişi temizle</button></p>
+      <div id="histList"></div>
     </div>
 
     <div class="result-grid">
@@ -541,6 +641,11 @@
               <div class="sub">Bu model için fiyat seyri, gerçek ilan ve satış verisi eşiği dolunca burada yayınlanacak.</div></div>
             <div class="widget widget-soon"><div class="widget-h">📊 Benzer ilanlar<span class="soon-lbl">YAKINDA</span></div>
               <div class="sub">Emsal ilan karşılaştırması, gerçek veri tabanı devreye girince eklenecek — uydurma emsal göstermeyiz.</div></div>
+          </div>
+          <div class="offer-band hidden" id="offerBand">
+            <div><b>💰 Önerilen Teklif</b><span class="ob-sub">pazarlık payı dahil makul aralık</span></div>
+            <div class="ob-val" id="obRange">—</div>
+            <button class="rh-btn" onclick="copyOffer()" id="btnOffer">Teklifi Kopyala</button>
           </div>
         </div>
       </div>
@@ -669,7 +774,8 @@
     Katsayılar başlangıç kabulüdür; gerçek üründe gerçekleşen satış verisinden öğrenilir.<br>
     Güven skoru ve bütçe modu ilan listesi temsilidir.
   </footer>
-</div>
+</main>
+</div><!-- /shell -->
 
 <script>
 const CURRENT_YEAR = 2026;
@@ -963,6 +1069,74 @@ function suggestSegment(name) {
   } else el.classList.add('hidden');
 }
 
+function copyOffer() {
+  const text = 'Ederi teklif önerisi: ' + $('obRange').textContent
+    + ' (ilan: ' + $('askShown').textContent + ', hesaplanan rayiç: ' + $('fairValue').textContent + ') — ederi.org';
+  const done = () => { $('btnOffer').textContent = 'Kopyalandı ✓'; setTimeout(() => { $('btnOffer').textContent = 'Teklifi Kopyala'; }, 1800); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+}
+
+// Analiz kartı sekmeleri (görüntü / metin / link)
+function ocTab(pane, btn) {
+  ['paneImg', 'paneText', 'paneLink'].forEach(p => $(p).classList.toggle('hidden', p !== pane));
+  document.querySelectorAll('.oc-tab').forEach(b => b.classList.toggle('active', b === btn));
+}
+
+// ---- GEÇMİŞ ANALİZLERİM (yalnızca cihazda — localStorage; sunucu yok) ----
+const HIST_KEY = 'ederi_gecmis_v1';
+let histTimer = null;
+function histAll() { try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; } }
+function histBadge() {
+  const n = histAll().length, b = $('histCount');
+  b.textContent = n; b.classList.toggle('hidden', n === 0);
+}
+function saveHistory() {
+  if (!(lastResult && lastResult.fair > 0)) return;
+  const rec = {
+    t: new Date().toISOString().slice(0, 16).replace('T', ' '),
+    name: $('carName').value.trim() || 'Araç', seg: activeSegment,
+    anchor: val('newPrice'), year: val('modelYear'), km: val('km'),
+    tramer: $('tramer').value, painted: $('painted').value, replaced: $('replaced').value,
+    heavy: $('heavyDamage').value, ask: val('askPrice'),
+    eder: $('fairValue').textContent, etiket: $('verdictPill').textContent || '—',
+  };
+  const list = histAll();
+  const core = r => [r.name, r.anchor, r.year, r.km, r.tramer, r.painted, r.replaced, r.heavy, r.ask, r.seg].join('|');
+  if (list.length && core(list[0]) === core(rec)) list[0] = rec; // aynı analizin ince ayarı — üstüne yaz
+  else list.unshift(rec);
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0, 50))); } catch {}
+  histBadge();
+}
+function renderHistory() {
+  const list = histAll();
+  $('histList').innerHTML = list.length ? list.map((r, i) =>
+    `<div class="hist-row"><span class="h-name">${r.name.replace(/</g, '&lt;')}</span>`
+    + `<span class="h-meta">${r.t} · ${r.year} · ${(+r.km).toLocaleString('tr-TR')} km · ${r.etiket}</span>`
+    + `<span class="h-eder">${r.eder}</span>`
+    + `<button class="rh-btn" onclick="loadHist(${i})">Yükle</button></div>`).join('')
+    : '<p class="link-note">Henüz kayıtlı analiz yok — ilk analizini yaptığında burada görünecek.</p>';
+}
+function toggleHistory(e) {
+  e.preventDefault();
+  const p = $('historyPanel');
+  p.classList.toggle('hidden');
+  if (!p.classList.contains('hidden')) { renderHistory(); p.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+function loadHist(i) {
+  const r = histAll()[i]; if (!r) return;
+  $('carName').value = r.name === 'Araç' ? '' : r.name;
+  $('newPrice').value = r.anchor || ''; $('modelYear').value = r.year; $('km').value = r.km;
+  $('tramer').value = r.tramer; $('painted').value = r.painted; $('replaced').value = r.replaced;
+  $('heavyDamage').value = r.heavy || 'unknown'; $('askPrice').value = r.ask || '';
+  setSegment(r.seg || 'binek');
+  $('historyPanel').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function clearHistory() {
+  try { localStorage.removeItem(HIST_KEY); } catch {}
+  renderHistory(); histBadge();
+}
+
 // 3 adımlı akış göstergesi
 function setStep(n) {
   [['stepUpload', 1], ['stepCheck', 2], ['stepResult', 3]].forEach(([id, i]) => {
@@ -981,7 +1155,20 @@ function focusField(id) {
 }
 
 // Araç başlık bandı — analiz edilen aracın kimliği (spec çipleri + tarih)
+let lastThumb = null; // kullanıcının yüklediği görüntüden küçük önizleme — kendi verisi, stok foto değil
+async function makeThumb(source) {
+  const img = (source && source.getContext) ? source : await createImageBitmap(source);
+  const W = 240, H = 160;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const sc = Math.max(W / img.width, H / img.height);
+  ctx.drawImage(img, (W - img.width * sc) / 2, (H - img.height * sc) / 2, img.width * sc, img.height * sc);
+  return cv.toDataURL('image/jpeg', 0.72);
+}
+
 function renderHero(car) {
+  const th = document.querySelector('.vh-thumb');
+  if (lastThumb && th) th.innerHTML = '<img src="' + lastThumb + '" alt="İlan görüntüsü" style="width:100%;height:100%;object-fit:cover">';
   const name = $('carName').value.trim() || carNameFromUrl($('listingUrl').value.trim());
   $('vhTitle').textContent = name || 'Analiz edilen araç';
   $('vhSub').textContent = name
@@ -1065,6 +1252,7 @@ function calc() {
     $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır — ilanda yazmaz, bu yüzden soruyoruz. <button class="fix-link" onclick="focusField(\'anchorSelect\')">Çapa alanına git →</button>';
     $('offer').textContent = '—';
     $('dealRange').textContent = '—';
+    $('offerBand').classList.add('hidden');
     $('waterfall').innerHTML = '';
     $('sideTotal').textContent = '—';
     $('qualPill').classList.add('hidden');
@@ -1153,6 +1341,8 @@ function calc() {
     $('dealRange').textContent = gap > 2
       ? `${fmt(rr.fair*1.02)} – ${fmt(Math.min(rr.fair*1.08, askPrice))}`
       : fmt(askPrice);
+    $('obRange').textContent = $('dealRange').textContent;
+    $('offerBand').classList.remove('hidden');
 
     let advText;
     if (gap > 25)      advText = `İlan fiyatı rayicin çok üzerinde. Bu makasta pazarlık genelde yetmez — <b>${fmt(offer)}</b> civarı bir teklifle başlayıp gerekirse vazgeçmeye hazır olun; benzer araçların ilanlarını emsal olarak gösterin.`;
@@ -1169,6 +1359,7 @@ function calc() {
     $('verdictMsg').textContent = 'Karşılaştırma için ilan fiyatını girin.';
     $('offer').textContent = '—';
     $('dealRange').textContent = '—';
+    $('offerBand').classList.add('hidden');
   }
 
   const totalAdj = rr.fair - car.newPrice;
@@ -1204,6 +1395,10 @@ function calc() {
   $('waterfall').innerHTML = wf.map(([l,v,c,e]) =>
     `<div class="wf-item"><span>${l}${e ? `<span class="wf-exp">${e}</span>` : ''}</span><span class="${c}">${v}</span></div>`).join('');
   $('sideTotal').textContent = rCons ? fmt(rCons.fair) + ' – ' + fmt(r.fair) : fmt(r.fair);
+
+  // Geçmiş Analizlerim: kayıt yalnızca cihazda (localStorage) — 1,5 sn sükunet sonrası
+  clearTimeout(histTimer);
+  if (lastResult && lastResult.fair > 0) histTimer = setTimeout(saveHistory, 1500);
 }
 
 function mockAnalyze() {
@@ -1440,6 +1635,7 @@ async function handleImage(source) {
   status.textContent = 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
   setStep(2);
   try {
+    try { lastThumb = await makeThumb(source); } catch {}
     await loadTesseract();
     const pre = await upscaleForOcr(source);
     const { data } = await Tesseract.recognize(pre, 'tur', {
@@ -1472,6 +1668,7 @@ const fmtField = (k, v) => k === 'heavy' ? (v === 'yes' ? 'Evet' : 'Hayır')
 
 function resetOcr() {
   pendingOcr = null;
+  lastThumb = null;
   const c = $('ocrConfirm');
   c.classList.add('hidden');
   c.innerHTML = '';
@@ -1687,9 +1884,10 @@ $('listingUrl').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 10, target: 100 };
+const CALIB = { count: 21, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
+$('tcCalib').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanacak. Uydurma skor göstermeyiz.';
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
@@ -1698,6 +1896,7 @@ $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b
   .forEach(id => $(id).addEventListener('input', calc));
 ['roofDamage','chassisDamage','hoodReplaced','heavyDamage']
   .forEach(id => $(id).addEventListener('change', calc));
+histBadge();
 calc();
 </script>
 

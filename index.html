@@ -328,9 +328,19 @@
   .ocr-card { margin-bottom: 0; }
   @media (max-width: 900px) {
     .shell { grid-template-columns: 1fr; padding-top: 12px; }
-    .side { position: static; }
+    /* Mobilde asıl iş analiz kartı: kenar çubuğu parçalanır, hero küçülür,
+       menü sayfa sonuna iner (display:contents ile sıralama shell'e devrolur) */
+    .side { display: contents; }
+    .side-hero { order: 1; padding: 16px 16px 10px; }
+    .side-hero .big { font-size: 18px; }
+    .sh-car { width: 44%; max-width: 150px; margin-top: 6px; }
+    .maincol { order: 2; }
+    .side-nav { order: 3; flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 6px; }
+    .side-nav .sn { white-space: nowrap; }
+    .side-nav .sn.soon { display: none; }
     .howto { display: none; }
     .top-row { grid-template-columns: 1fr; }
+    .trust-card { order: 4; }
   }
   /* 3 adımlı akış göstergesi — kullanıcı nerede olduğunu hep bilsin */
   .steps { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -425,6 +435,19 @@
 
   /* ---- Mobil ---- */
   @media (max-width: 600px) {
+    .hide-sm { display: none; }
+    .cmp-badge.honest { font-size: 10.5px; padding: 6px 8px; }
+    .cmp-box .v.ask, .cmp-box .v.fair { font-size: 20px; white-space: nowrap; }
+    .cmp-box { padding: 14px 10px 12px; }
+    .res-title { font-size: 13px; }
+    .gap-band { flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 14px; }
+    .gap-band .r { font-size: 11.5px; }
+    .oc-tab { flex: 1; padding: 9px 6px; font-size: 12px; }
+    .oc-tabs { gap: 6px; }
+    .oc-title { font-size: 17px !important; }
+    .rh-btn { padding: 7px 10px; font-size: 11.5px; }
+    .assets { gap: 6px; }
+    .asset { font-size: 12.5px; padding: 8px 12px; }
     body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
     .topbar { margin: 0 -10px; }
     .tb-nav { display: none; }
@@ -608,8 +631,8 @@
               <div class="k">Hesaplanan Rayiç Değer</div>
               <div class="v fair" id="fairValue">—</div>
               <div class="s">kural tabanlı motorla, kırılımıyla hesaplanır</div>
-              <div class="cmp-badge honest">🛡 Güven skoru henüz yayınlanmıyor — motor gerçek satış verisiyle
-                kalibre ediliyor (<span id="confDetail">BETA</span>). Uydurma istatistik göstermeyiz.</div>
+              <div class="cmp-badge honest">🛡 Güven skoru henüz yayınlanmıyor<span class="hide-sm"> — motor gerçek satış verisiyle
+                kalibre ediliyor</span> (<span id="confDetail">BETA</span>).<span class="hide-sm"> Uydurma istatistik göstermeyiz.</span></div>
             </div>
           </div>
           <div class="gap-band hidden" id="gapBand">

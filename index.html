@@ -1477,12 +1477,13 @@ function carNameFromText(text) {
     if (/^(hatas[ıi]z(-boyas[ıi]z)?|boyas[ıi]z|tramersiz|de[ğg]i[şs]ensiz|temiz|acil|orj?[iı]?nal|full|cam|tavan|sunroof|emsalsiz|bak[ıi]ml[ıi])$/i.test(t)) continue;
     // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
     if (/^(19|20)\d{2}$/.test(t) || /^(km|tl|₺)\.?,?$/i.test(t) || /[\d.](km|tl)$/i.test(t) || /^[\d.,]{4,}$/.test(t)
-        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|ilan|sahibinden|galeriden|de[ğg]i[şs]en|tramer|arac[ıi]m(?:[ıi]n)?|anahtar.*|kitap[çc].*|mevcut.*|garantili|ekspertiz.*|yedek|özellikler)$/i.test(t)) break;
+        || /^(y[ıi]l[ıi]?|fiyat[ıi]?|kilometre|vites|yak[ıi]t|seri|model|kasa|renk|[çc]eki[şs]|motor|koltuk|boya|takas|kimden|plaka|arac[ıi]m(?:[ıi]n)?|anahtar.*|kitap[çc].*|mevcut.*|garantili|ekspertiz.*|yedek|özellikler)$/i.test(t)) break;
     // "108 KM" gibi sayı+birim ikilisinde sayı model adına sızmasın (GERÇEK vaka: "TFSI 108")
     const next = rest[rest.indexOf(w) + 1] || '';
     if (/^\d{1,3}$/.test(t) && /^(km|tl|₺)/i.test(next.replace(/^[^A-Za-z₺]+/, ''))) break;
     words.push(t);
   }
+  while (words.length > 1 && /^[a-zçğıöşü]{1,2}$/i.test(words[words.length - 1])) words.pop();
   return words.join(' ');
 }
 
@@ -1582,9 +1583,13 @@ function ocrExtract(text) {
     else if (/boyas[ıi]z/i.test(flat)) out.painted = 0;
   }
   const d = flat.match(/(?<!:)(?<!:\s)\b(\d{1,2})\s*(?:adet\s*)?(?:par[çc]a\s*)?de[ğg]i[şs]en/i)
-    || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})\b(?!\s*(?:lokal\s*)?boyal)/i);
+    || flat.match(/de[ğg]i[şs]en(?:\s*par[çc]a)?(?:\s*say[ıi]s[ıi])?\s*:?\s*(\d{1,2})(?![\d.,])\b(?!\s*(?:lokal\s*)?boyal)/i);
   if (d) out.replaced = parseInt(d[1], 10);
   else if (/de[ğg]i[şs]ensiz|de[ğg]i[şs]en\s*:?\s*(?:par[çc]a\s*)?(?:ve\s*)?(?:tramer\s*)?yok/i.test(flat)) out.replaced = 0;
+  // Boya/değişen bölümü var ama sayı okunamadı → görüntü kırpılmış olabilir (GERÇEK Berlingo vakası)
+  if (out.painted === undefined && out.replaced === undefined && /boya\s*-?\s*de[ğg]i[şs]en|boya\b/i.test(flat))
+    out._flags.body = 'İlanda "boya-değişen" bölümü görünüyor ama sayılar okunamadı — bu satır görüntünün kenarında kesik kalmış olabilir. O bölümü de içeren bir görüntü daha yükle ya da elle gir.';
+
   // Ağır hasar (pert) kaydı: standart alan ("Kayıtlı: Evet") + serbest yazım
   // ("AĞIR HASAR KAYDI ... MEVCUT" — araya yıl/tutar girebilir, GERÇEK Mercedes vakası)
   const hv = flat.match(/a[ğg][ıi]r\s*hasar(?:l[ıi])?(?:\s*kay[ıi]tl[ıi])?\s*:?\s*(hay[ıi]r|evet|yok|var)/i)

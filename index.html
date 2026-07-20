@@ -715,6 +715,10 @@ function gapClass(gap) {
 // ---- ÇAPA VERİTABANI (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
 // model: isimden otomatik eşleştirme deseni; trim: donanım ayrıştırma; muadil: sıfırı satılmayan model
 const ANCHOR_DB = [
+  { ad: 'Audi A3 Sportback 35 TFSI Advanced (premium)', fiyat: 3125000, model: /\ba3\b/i },
+  { ad: 'Peugeot Rifter Allure 1.5 BlueHDi (ticari/camlı van)', fiyat: 1663594, model: /rifter|partner/i },
+  { ad: 'VW Caddy Impression 2.0 TDI (ticari/kombi)', fiyat: 1820438, model: /caddy/i, trim: /impression|trendline/i },
+  { ad: 'VW Caddy Style 2.0 TDI (ticari/kombi)', fiyat: 2194500, model: /caddy/i, trim: /style/i },
   { ad: 'Dacia Sandero Essential TCe 100', fiyat: 1295000, model: /sandero(?!\s*stepway)/i, trim: /essential/i },
   { ad: 'Dacia Sandero Expression TCe 100', fiyat: 1426000, model: /sandero(?!\s*stepway)/i, trim: /expression/i },
   { ad: 'Kia Picanto Cool 1.0 AMT', fiyat: 1435000, model: /picanto/i },
@@ -799,6 +803,7 @@ const ANCHOR_DB = [
   { ad: 'Nissan Qashqai Skypack 4x4', fiyat: 3335400, model: /qashqai/i, trim: /4x4/i },
   { ad: 'VW Tiguan Life DSG', fiyat: 3402000, model: /tiguan/i },
   { ad: 'VW Passat Impression DSG', fiyat: 3600000, model: /passat/i },
+  { ad: 'VW Passat Impression DSG (CC/Arteon muadili — CC üretimde yok, varsayım)', fiyat: 3600000, model: /\bcc\b|arteon/i },
   { ad: 'VW Tayron Life DSG', fiyat: 3667000, model: /tayron/i },
   { ad: 'Skoda Superb Premium 1.5 TSI', fiyat: 3774900, model: /superb/i },
   { ad: 'Nissan X-Trail Platinum', fiyat: 5098300, model: /x-?trail/i },

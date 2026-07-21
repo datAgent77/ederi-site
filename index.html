@@ -307,6 +307,14 @@
   .qr-gap.up { background: rgba(220,38,38,.1); color: var(--red); }
   .qr-gap.down { background: rgba(37,99,235,.1); color: var(--accent); }
   .qr-note { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .qr-beta { font-size: 10.5px; color: var(--muted); line-height: 1.5; background: rgba(21,151,63,.05);
+    border: 1px solid rgba(21,151,63,.18); border-radius: 10px; padding: 8px 10px; }
+  .qr-box .v.range { font-size: 16.5px; line-height: 1.3; }
+  .form-details > summary { cursor: pointer; font-size: 14px; font-weight: 800; color: var(--accent);
+    list-style: none; padding: 2px 0; }
+  .form-details > summary::before { content: '▸ '; }
+  .form-details[open] > summary::before { content: '▾ '; }
+  .form-details > summary:hover { color: var(--text); }
   .oc-title { font-size: 19px !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important; margin-bottom: 4px !important; }
   .oc-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
   .oc-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -585,6 +593,7 @@
       <div class="qr-gap hidden" id="qrGap"></div>
       <span class="verdict-pill hidden" id="qrPill"></span>
       <p class="qr-note" id="qrNote"></p>
+      <p class="qr-beta">🛡 Güven skoru henüz yayınlanmıyor — motor gerçek satış verisiyle kalibre ediliyor (<span id="confDetail">BETA</span>).</p>
       <button class="btn" style="width:100%;margin-top:10px" onclick="document.getElementById('fullResult').scrollIntoView({behavior:'smooth',block:'start'})">Detaylı kırılımı gör ↓</button>
     </aside>
    </div><!-- /top-row -->
@@ -600,7 +609,7 @@
       <div class="result-main">
         <div class="result-head hidden" id="resultHead">
           <div class="rh-ic">✓</div>
-          <div><div class="rh-t">Analiz Sonucu <span class="qual-pill hidden" id="qualPill"></span></div><div class="rh-s" id="rhTime">—</div></div>
+          <div><div class="rh-t">Analiz Detayı</div><div class="rh-s" id="rhTime">—</div></div>
           <div class="rh-actions">
             <button class="rh-btn" id="btnShare" onclick="shareResult()">🔗 Paylaş</button>
             <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
@@ -623,30 +632,7 @@
         </div>
 
         <div class="decision" id="decision">
-          <h3 class="res-title">İlan Fiyatı vs. Hesaplanan Rayiç Değer</h3>
-          <p class="res-sub">Aynı ürün için istenen fiyatla, verilerden hesaplanan rayiç değeri karşılaştırdık.</p>
-          <div class="compare">
-            <div class="cmp-box askside">
-              <div class="k">İlan Fiyatı</div>
-              <div class="v ask" id="askShown">—</div>
-              <div class="s">satıcının belirlediği fiyat</div>
-            </div>
-            <div class="cmp-vs">vs</div>
-            <div class="cmp-box fairside">
-              <div class="k">Hesaplanan Rayiç Değer</div>
-              <div class="v fair" id="fairValue">—</div>
-              <div class="s">kural tabanlı motorla, kırılımıyla hesaplanır</div>
-              <div class="cmp-badge honest">🛡 Güven skoru henüz yayınlanmıyor<span class="hide-sm"> — motor gerçek satış verisiyle
-                kalibre ediliyor</span> (<span id="confDetail">BETA</span>).<span class="hide-sm"> Uydurma istatistik göstermeyiz.</span></div>
-            </div>
-          </div>
-          <div class="gap-band hidden" id="gapBand">
-            <span id="gapMain"></span><span class="r" id="gapPct"></span>
-          </div>
-          <div class="verdict-row">
-            <span class="verdict-pill hidden" id="verdictPill"></span>
-            <p class="verdict-msg" id="verdictMsg"></p>
-          </div>
+          <p class="verdict-msg" id="verdictMsg"></p>
           <p class="qual-note hidden" id="qualNote"></p>
           <div class="widget-row">
             <div class="widget"><div class="widget-h">🎯 Önerilen teklif</div><div class="val" id="offer">—</div>
@@ -686,8 +672,8 @@
     </div>
 
     <div class="grid hidden" id="formArea">
-      <div class="card">
-        <h2>Araç Bilgileri</h2>
+      <details class="card form-details" id="formDetails" open>
+        <summary>🚗 Araç Bilgileri — düzeltmek veya eksik tamamlamak için aç</summary>
         <p class="req-note">🎯 <b>Tam analiz için:</b> olmazsa olmazlar <b>sıfır muadil fiyatı (çapa), model yılı ve km</b> — bunlar olmadan hesap yapılmaz.
         Sonucu ciddi etkileyenler: <b>tramer, boyalı/değişen, ilan fiyatı</b>. Bilmediğini boş bırak —
         sonuç dürüstçe <b>"KISMİ ANALİZ"</b> etiketi alır, tramersiz için temkinli senaryo hesaplanır.</p>
@@ -755,7 +741,7 @@
           <p class="link-note" style="margin-top:8px">Hasar yeri ve ağır hasar katsayıları saha araştırmasına dayanır (18.07.2026:
           tavan %15-25, şasi/podye %20-35, kaput %10-15, pert %30-45 bandları) — gerçek ilan kalibrasyonuyla rafine edilecek.</p>
         </details>
-      </div>
+      </details>
     </div>
   </div>
 
@@ -1086,7 +1072,7 @@ function suggestSegment(name) {
 
 function copyOffer() {
   const text = 'Ederi teklif önerisi: ' + $('obRange').textContent
-    + ' (ilan: ' + $('askShown').textContent + ', hesaplanan rayiç: ' + $('fairValue').textContent + ') — ederi.org';
+    + ' (ilan: ' + $('qrAsk').textContent + ', hesaplanan rayiç: ' + $('qrFair').textContent + ') — ederi.org';
   const done = () => { $('btnOffer').textContent = 'Kopyalandı ✓'; setTimeout(() => { $('btnOffer').textContent = 'Teklifi Kopyala'; }, 1800); };
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
 }
@@ -1102,6 +1088,7 @@ function showResults() {
 function newAnalysis(e) {
   if (e) e.preventDefault();
   ['fullResult', 'formArea', 'quickResult', 'historyPanel', 'ocrConfirm', 'ocrStatus'].forEach(id => $(id).classList.add('hidden'));
+  $('confDetail').textContent = 'BETA';
   resetOcr(true); // bekleyen OCR kümesi + form alanları temizlenir
   ['carName', 'newPrice', 'listingText', 'listingUrl'].forEach(id => { $(id).value = ''; });
   ['modelYear', 'km', 'tramer', 'painted', 'replaced', 'askPrice'].forEach(id => { $(id).value = ''; });
@@ -1110,27 +1097,6 @@ function newAnalysis(e) {
   $('anchorSelect').value = ''; $('anchorInfo').classList.add('hidden');
   calc();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Sağdaki özet panel, sonuç bloğunun aynasıdır — tek kaynak calc(), burada yalnız yansıtılır
-function syncQuickResult() {
-  const name = $('vhTitle').textContent.trim();
-  $('qrName').textContent = (!name || name === 'Analiz edilen araç') ? 'Analiz edilen araç' : name;
-  $('qrAsk').textContent = $('askShown').textContent;
-  $('qrFair').textContent = $('fairValue').textContent;
-  const q = $('qualPill'), qq = $('qrQual');
-  qq.className = q.className.replace('hidden', '').trim() + (q.classList.contains('hidden') ? ' hidden' : '');
-  qq.textContent = q.textContent;
-  const v = $('verdictPill'), qv = $('qrPill');
-  qv.className = v.className; qv.textContent = v.textContent;
-  const g = $('gapBand'), qg = $('qrGap');
-  if (g.classList.contains('hidden')) qg.classList.add('hidden');
-  else {
-    qg.className = 'qr-gap ' + (g.classList.contains('up') ? 'up' : 'down');
-    qg.textContent = $('gapMain').textContent + ' · ' + $('gapPct').textContent;
-  }
-  const qn = $('qualNote');
-  $('qrNote').textContent = qn.classList.contains('hidden') ? '' : qn.textContent.replace(' — eksiğe tıkla, alana götürelim.', '');
 }
 
 // Analiz kartı sekmeleri (görüntü / metin / link)
@@ -1155,7 +1121,7 @@ function saveHistory() {
     anchor: val('newPrice'), year: val('modelYear'), km: val('km'),
     tramer: $('tramer').value, painted: $('painted').value, replaced: $('replaced').value,
     heavy: $('heavyDamage').value, ask: val('askPrice'),
-    eder: $('fairValue').textContent, etiket: $('verdictPill').textContent || '—',
+    eder: $('qrFair').textContent, etiket: $('qrPill').textContent || '—',
   };
   const list = histAll();
   const core = r => [r.name, r.anchor, r.year, r.km, r.tramer, r.painted, r.replaced, r.heavy, r.ask, r.seg].join('|');
@@ -1198,6 +1164,9 @@ function clearHistory() {
 // Eksik alana götür ve vurgula — kullanıcı formu aramasın, eksik ayağına gitsin
 function focusField(id) {
   const el = $(id);
+  // Alan kapalı bir açılır menüdeyse (Araç Bilgileri / Metodoloji) önce onu aç
+  for (let p = el.parentElement; p; p = p.parentElement)
+    if (p.tagName === 'DETAILS') p.open = true;
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   el.classList.add('field-attn');
   try { el.focus({ preventScroll: true }); } catch {}
@@ -1292,21 +1261,22 @@ function calc() {
 
   // Çapa yoksa hesap YOK — varsayılan değerle sessiz hesap güveni zedeler
   if (!car.newPrice) {
-    $('fairValue').textContent = '—';
-    $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
+    $('qrFair').textContent = '—'; $('qrFair').classList.remove('range');
+    $('qrAsk').textContent = askPrice > 0 ? fmt(askPrice) : '—';
+    $('qrName').textContent = 'Analiz edilen araç';
     $('vehicleHero').classList.add('hidden');
     $('resultHead').classList.add('hidden');
-    $('gapBand').classList.add('hidden');
+    $('qrGap').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
-    $('verdictPill').classList.add('hidden');
+    $('qrPill').classList.add('hidden');
     $('verdictMsg').innerHTML = '<b>Sıfır muadil fiyatı gerekli.</b> Eder, aracın <b>bugünkü sıfır muadilinin liste fiyatına</b> dayanır — ilanda yazmaz, bu yüzden soruyoruz. <button class="fix-link" onclick="focusField(\'anchorSelect\')">Çapa alanına git →</button>';
     $('offer').textContent = '—';
     $('dealRange').textContent = '—';
     $('offerBand').classList.add('hidden');
     $('waterfall').innerHTML = '';
     $('sideTotal').textContent = '—';
-    syncQuickResult();
-    $('qualPill').classList.add('hidden');
+    $('qrNote').textContent = '';
+    $('qrQual').classList.add('hidden');
     $('qualNote').classList.add('hidden');
     lastResult = null;
     return;
@@ -1318,7 +1288,7 @@ function calc() {
   const rCons = tramerKnown ? null : engine({ ...car, tramer: 60000 }, coefs());
   const rr = rCons || r;
 
-  const fv = $('fairValue');
+  const fv = $('qrFair');
   if (rCons && rr.fair > 0) {
     fv.textContent = fmt(rCons.fair) + ' – ' + fmt(r.fair);
     fv.classList.add('range');
@@ -1326,7 +1296,7 @@ function calc() {
     fv.textContent = fmt(r.fair);
     fv.classList.remove('range');
   }
-  $('askShown').textContent = askPrice > 0 ? fmt(askPrice) : '—';
+  $('qrAsk').textContent = askPrice > 0 ? fmt(askPrice) : '—';
 
   // Analiz kalitesi etiketi — uydurma skor değil, girilen verinin eksiksizliği
   const missing = [];
@@ -1335,18 +1305,18 @@ function calc() {
   if (!bodyKnown) missing.push(['boyalı/değişen (iyimser varsayıldı)', 'painted']);
   if (!heavyKnown) missing.push(['ağır hasar kaydı (iyimser varsayıldı)', 'heavyDamage']);
   if (!(askPrice > 0)) missing.push(['ilan fiyatı (karşılaştırma yok)', 'askPrice']);
-  const pill = $('qualPill'), qn = $('qualNote');
+  const pill = $('qrQual'), qn = $('qualNote');
   if (r.fair > 0) {
-    pill.classList.remove('hidden', 'full', 'partial');
-    pill.classList.add(missing.length ? 'partial' : 'full');
+    pill.className = 'qual-pill ' + (missing.length ? 'partial' : 'full');
     pill.textContent = missing.length ? 'KISMİ ANALİZ' : 'TAM ANALİZ';
-  } else pill.classList.add('hidden');
+  } else pill.className = 'qual-pill hidden';
   if (missing.length && r.fair > 0) {
     qn.classList.remove('hidden');
     qn.innerHTML = 'Eksik veri: '
       + missing.map(([l, f]) => `<button class="fix-link" onclick="focusField('${f}')">${l}</button>`).join(' · ')
       + '. <b>Eksiksiz veri, daha isabetli eder demektir</b> — eksiğe tıkla, alana götürelim.';
-  } else qn.classList.add('hidden');
+    $('qrNote').textContent = 'Eksik veri: ' + missing.map(([l]) => l).join(' · ');
+  } else { qn.classList.add('hidden'); $('qrNote').textContent = ''; }
   const heroName = r.fair > 0 ? renderHero(car) : null;
   if (r.fair > 0) {
     $('resultHead').classList.remove('hidden');
@@ -1363,17 +1333,13 @@ function calc() {
     const [cls, verdict] = gapClass(gap);
     lastResult = { name: heroName, ask: askPrice, fair: rr.fair, gap };
 
-    const band = $('gapBand');
-    band.classList.remove('hidden', 'up', 'down');
-    band.classList.add(diff >= 0 ? 'up' : 'down');
-    $('gapMain').textContent = diff >= 0
-      ? `▲ +${fmt(Math.abs(diff))} fazla`
-      : `▼ −${fmt(Math.abs(diff))} düşük`;
-    $('gapPct').textContent = diff >= 0
-      ? `Piyasa rayicinin %${gap.toFixed(1)} üzerinde`
-      : `Piyasa rayicinin %${Math.abs(gap).toFixed(1)} altında`;
+    const band = $('qrGap');
+    band.className = 'qr-gap ' + (diff >= 0 ? 'up' : 'down');
+    band.textContent = diff >= 0
+      ? `▲ +${fmt(Math.abs(diff))} fazla · rayicin %${gap.toFixed(1)} üzerinde`
+      : `▼ −${fmt(Math.abs(diff))} düşük · rayicin %${Math.abs(gap).toFixed(1)} altında`;
 
-    const pill = $('verdictPill');
+    const pill = $('qrPill');
     pill.className = 'verdict-pill ' + cls;
     pill.textContent = verdict;
     // Aşırı düşük ilan fiyatı = klasik OCR baş-hane kaybı sinyali (GERÇEK vaka: 1.525.000 → 525.000)
@@ -1403,9 +1369,9 @@ function calc() {
     $('adviceWidget').classList.remove('hidden');
   } else {
     lastResult = rr.fair > 0 ? { name: heroName, ask: 0, fair: rr.fair, gap: 0 } : null;
-    $('gapBand').classList.add('hidden');
+    $('qrGap').classList.add('hidden');
     $('adviceWidget').classList.add('hidden');
-    $('verdictPill').classList.add('hidden');
+    $('qrPill').classList.add('hidden');
     $('verdictMsg').textContent = 'Karşılaştırma için ilan fiyatını girin.';
     $('offer').textContent = '—';
     $('dealRange').textContent = '—';
@@ -1449,7 +1415,7 @@ function calc() {
   // Geçmiş Analizlerim: kayıt yalnızca cihazda (localStorage) — 1,5 sn sükunet sonrası
   clearTimeout(histTimer);
   if (lastResult && lastResult.fair > 0) histTimer = setTimeout(saveHistory, 1500);
-  syncQuickResult();
+  $('qrName').textContent = heroName || 'Analiz edilen araç';
 }
 
 function mockAnalyze() {

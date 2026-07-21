@@ -299,14 +299,21 @@
   .ht-link { font-size: 12px; font-weight: 700; color: var(--accent); text-decoration: none; }
   .maincol { min-width: 0; }
   .top-row { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: stretch; margin-bottom: 20px; }
-  .trust-card { background: linear-gradient(165deg, var(--dark), var(--dark2)); color: #fff; border-radius: 16px;
-    padding: 22px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; justify-content: center; }
-  .trust-card .tc-ic { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #7aa4ff; color: #7aa4ff;
-    display: grid; place-items: center; font-size: 20px; }
-  .trust-card b { font-size: 14.5px; }
-  .trust-card p { font-size: 12px; color: #b9c6e4; line-height: 1.6; }
-  .tc-badge { font-size: 11px; font-weight: 700; color: #9fe8c1; background: rgba(62,207,142,.12);
-    border: 1px solid rgba(62,207,142,.3); border-radius: 20px; padding: 5px 12px; }
+  .quick-result { display: flex; flex-direction: column; gap: 10px; }
+  .qr-head { font-size: 12px; font-weight: 800; letter-spacing: .5px; color: var(--green); }
+  .qr-name { font-size: 16px; font-weight: 800; line-height: 1.25; }
+  .qr-pair { display: flex; flex-direction: column; gap: 8px; }
+  .qr-box { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex;
+    flex-direction: column; gap: 2px; }
+  .qr-box .k { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); }
+  .qr-box .v { font-size: 21px; font-weight: 800; line-height: 1.15; }
+  .qr-box.ask { border-color: rgba(220,38,38,.25); background: rgba(220,38,38,.04); }
+  .qr-box.fair { border-color: rgba(21,151,63,.3); background: rgba(21,151,63,.05); }
+  .qr-box.fair .v { color: var(--green); }
+  .qr-gap { font-size: 12.5px; font-weight: 800; border-radius: 10px; padding: 8px 10px; text-align: center; }
+  .qr-gap.up { background: rgba(220,38,38,.1); color: var(--red); }
+  .qr-gap.down { background: rgba(37,99,235,.1); color: var(--accent); }
+  .qr-note { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
   .oc-title { font-size: 19px !important; text-transform: none !important; letter-spacing: 0 !important; color: var(--text) !important; margin-bottom: 4px !important; }
   .oc-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
   .oc-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -506,7 +513,7 @@
     <svg class="sh-car" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g stroke="#7aa4ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"><path d="M14 40 L20 27 Q22 22 28 22 L66 22 Q71 22 75 26 L84 34 Q94 36 96 40 L96 44 Q96 46 94 46 L88 46"/><line x1="38" y1="46" x2="70" y2="46"/><circle cx="30" cy="46" r="6"/><circle cx="78" cy="46" r="6"/><line x1="46" y1="22" x2="46" y2="33"/><path d="M24 33 L88 33"/></g><g stroke="#3ecf8e" stroke-width="3.5" fill="none" stroke-linecap="round"><circle cx="98" cy="20" r="9"/><line x1="105" y1="27" x2="112" y2="34"/><polyline points="93,22 96,18 100,21 103,15"/></g></svg>
   </div>
   <nav class="side-nav">
-    <a class="sn active" href="#uygulama">🏠 Yeni Analiz</a>
+    <a class="sn active" href="#uygulama" onclick="newAnalysis(event)">🏠 Yeni Analiz</a>
     <a class="sn" href="#" id="navHistory" onclick="toggleHistory(event)">🗂 Geçmiş Analizlerim <span class="sn-badge hidden" id="histCount"></span></a>
     <a class="sn soon">❤️ Favorilerim <span class="soon-lbl">YAKINDA</span></a>
     <a class="sn soon">🗄 Fiyat Arşivi <span class="soon-lbl">YAKINDA</span></a>
@@ -576,11 +583,17 @@
       <div class="ocr-confirm hidden" id="ocrConfirm"></div>
     </div>
 
-    <aside class="trust-card">
-      <div class="tc-ic">🛡</div>
-      <b>Tarafsız · Şeffaf · Güvenilir</b>
-      <p>Hiçbir firma veya satıcıdan komisyon almayız. Tüm hesaplamalar açık ve anlaşılır şekilde gösterilir — kara kutu yok.</p>
-      <div class="tc-badge">BETA v0.9 · <span id="tcCalib">—</span> gerçek ilanla kalibrasyon</div>
+    <aside class="card quick-result hidden" id="quickResult">
+      <div class="qr-head">✓ ANALİZ SONUCU <span class="qual-pill hidden" id="qrQual"></span></div>
+      <div class="qr-name" id="qrName">—</div>
+      <div class="qr-pair">
+        <div class="qr-box ask"><span class="k">İlan fiyatı</span><span class="v" id="qrAsk">—</span></div>
+        <div class="qr-box fair"><span class="k">Hesaplanan rayiç (EDERİ)</span><span class="v" id="qrFair">—</span></div>
+      </div>
+      <div class="qr-gap hidden" id="qrGap"></div>
+      <span class="verdict-pill hidden" id="qrPill"></span>
+      <p class="qr-note" id="qrNote"></p>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="document.getElementById('fullResult').scrollIntoView({behavior:'smooth',block:'start'})">Detaylı kırılımı gör ↓</button>
     </aside>
    </div><!-- /top-row -->
 
@@ -591,7 +604,7 @@
       <div id="histList"></div>
     </div>
 
-    <div class="result-grid">
+    <div class="result-grid hidden" id="fullResult">
       <div class="result-main">
         <div class="result-head hidden" id="resultHead">
           <div class="rh-ic">✓</div>
@@ -680,7 +693,7 @@
       </aside>
     </div>
 
-    <div class="grid">
+    <div class="grid hidden" id="formArea">
       <div class="card">
         <h2>Araç Bilgileri</h2>
         <p class="req-note">🎯 <b>Tam analiz için:</b> olmazsa olmazlar <b>sıfır muadil fiyatı (çapa), model yılı ve km</b> — bunlar olmadan hesap yapılmaz.
@@ -1086,6 +1099,48 @@ function copyOffer() {
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
 }
 
+// ---- EKRAN MODLARI: temiz başlangıç → onayla → sonuç ----
+// "Yeni Analiz" sadece yükleme kartını bırakır; sonuç ve form ancak analiz sonrası açılır.
+function showResults() {
+  $('fullResult').classList.remove('hidden');
+  $('formArea').classList.remove('hidden');
+  $('quickResult').classList.remove('hidden');
+}
+
+function newAnalysis(e) {
+  if (e) e.preventDefault();
+  ['fullResult', 'formArea', 'quickResult', 'historyPanel', 'ocrConfirm', 'ocrStatus'].forEach(id => $(id).classList.add('hidden'));
+  resetOcr(true); // bekleyen OCR kümesi + form alanları temizlenir
+  ['carName', 'newPrice', 'listingText', 'listingUrl'].forEach(id => { $(id).value = ''; });
+  ['modelYear', 'km', 'tramer', 'painted', 'replaced', 'askPrice'].forEach(id => { $(id).value = ''; });
+  $('heavyDamage').value = 'unknown';
+  ['roofDamage', 'chassisDamage', 'hoodReplaced'].forEach(id => { $(id).checked = false; });
+  $('anchorSelect').value = ''; $('anchorInfo').classList.add('hidden');
+  calc();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Sağdaki özet panel, sonuç bloğunun aynasıdır — tek kaynak calc(), burada yalnız yansıtılır
+function syncQuickResult() {
+  const name = $('vhTitle').textContent.trim();
+  $('qrName').textContent = (!name || name === 'Analiz edilen araç') ? 'Analiz edilen araç' : name;
+  $('qrAsk').textContent = $('askShown').textContent;
+  $('qrFair').textContent = $('fairValue').textContent;
+  const q = $('qualPill'), qq = $('qrQual');
+  qq.className = q.className.replace('hidden', '').trim() + (q.classList.contains('hidden') ? ' hidden' : '');
+  qq.textContent = q.textContent;
+  const v = $('verdictPill'), qv = $('qrPill');
+  qv.className = v.className; qv.textContent = v.textContent;
+  const g = $('gapBand'), qg = $('qrGap');
+  if (g.classList.contains('hidden')) qg.classList.add('hidden');
+  else {
+    qg.className = 'qr-gap ' + (g.classList.contains('up') ? 'up' : 'down');
+    qg.textContent = $('gapMain').textContent + ' · ' + $('gapPct').textContent;
+  }
+  const qn = $('qualNote');
+  $('qrNote').textContent = qn.classList.contains('hidden') ? '' : qn.textContent.replace(' — eksiğe tıkla, alana götürelim.', '');
+}
+
 // Analiz kartı sekmeleri (görüntü / metin / link)
 function ocTab(pane, btn) {
   ['paneImg', 'paneText', 'paneLink'].forEach(p => $(p).classList.toggle('hidden', p !== pane));
@@ -1139,6 +1194,7 @@ function loadHist(i) {
   $('tramer').value = r.tramer; $('painted').value = r.painted; $('replaced').value = r.replaced;
   $('heavyDamage').value = r.heavy || 'unknown'; $('askPrice').value = r.ask || '';
   setSegment(r.seg || 'binek');
+  showResults();
   $('historyPanel').classList.add('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1257,6 +1313,7 @@ function calc() {
     $('offerBand').classList.add('hidden');
     $('waterfall').innerHTML = '';
     $('sideTotal').textContent = '—';
+    syncQuickResult();
     $('qualPill').classList.add('hidden');
     $('qualNote').classList.add('hidden');
     lastResult = null;
@@ -1400,6 +1457,7 @@ function calc() {
   // Geçmiş Analizlerim: kayıt yalnızca cihazda (localStorage) — 1,5 sn sükunet sonrası
   clearTimeout(histTimer);
   if (lastResult && lastResult.fair > 0) histTimer = setTimeout(saveHistory, 1500);
+  syncQuickResult();
 }
 
 function mockAnalyze() {
@@ -1420,6 +1478,7 @@ function mockAnalyze() {
   $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
   $('askPrice').value = 1250000; $('heavyDamage').value = 'no';
   calc();
+  showResults();
   $('confDetail').textContent = 'BETA · örnek ilanla dolduruldu';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1769,6 +1828,7 @@ function applyOcr() {
   autoAnchor($('carName').value); // isimden çapayı sistem bulur; bulamazsa açıkça söyler
   suggestSegment($('carName').value);
   calc();
+  showResults(); // "Onayla ve Değerle" → sonuç paneli ve form ekrana gelir
   $('ocrConfirm').classList.add('hidden');
   $('confDetail').textContent = 'BETA · görüntüden okundu, kullanıcı onayladı';
   if (val('newPrice') > 0) {
@@ -1891,7 +1951,6 @@ $('listingUrl').addEventListener('change', () => {
 const CALIB = { count: 22, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
-$('tcCalib').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanacak. Uydurma skor göstermeyiz.';
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',

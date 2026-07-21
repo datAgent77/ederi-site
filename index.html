@@ -383,6 +383,8 @@
   .ocr-status { margin-top: 12px; font-size: 13px; color: var(--accent); }
   .ocr-confirm { margin-top: 14px; }
   .ocr-lead { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .ocr-seg { margin-top: 12px; padding: 12px; border-radius: 12px; background: var(--card2); border: 1px solid var(--border); }
+  .ocr-seg label { margin: 0 0 8px; }
   .ocr-lead b { color: var(--text); }
   .found { color: var(--green); font-size: 11px; font-weight: 700; }
   .notfound { color: var(--yellow); font-size: 11px; font-weight: 700; }
@@ -1022,16 +1024,16 @@ function carNameFromUrl(url) {
 // Kaynak: 17.07.2026 danışman değerlendirmesi + GERÇEK-7 lüks EV bulgusu.
 // Yalnızca 'binek' gerçek ilanlarla kalibre ediliyor; diğerleri uzman varsayımıdır.
 const SEGMENTS = {
-  binek:   { label: 'Binek C/D',
+  binek:   { label: 'Binek C/D', icon: '🚗',
              coef: { depY1: 15, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3, kmStepPen: 3 },
              note: 'Ana akım binek (C/D — Egea, Megane, Passat…). Kalibrasyon bu segmentte yürüyor.' },
-  premium: { label: 'Premium/Lüks',
+  premium: { label: 'Premium/Lüks', icon: '💎',
              coef: { depY1: 22, depY2: 8.5, depY6: 6, normKm: 15000, paintPen: 3, replacePen: 6, kmStepPen: 3 },
              note: 'E/F segmenti (BMW 5, Mercedes E/S…): ilk yıl kaybı daha dik, hasar hassasiyeti yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı, sonucu temkinli yorumla.' },
-  ticari:  { label: 'Ticari/Filo',
+  ticari:  { label: 'Ticari/Filo', icon: '🚚',
              coef: { depY1: 12, depY2: 8.5, depY6: 6, normKm: 30000, paintPen: 1, replacePen: 2, kmStepPen: 1 },
              note: 'Hafif ticari / filo (Courier, Doblo…): km normu 30.000/yıl, hasar toleransı yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı.' },
-  ev:      { label: 'Elektrikli',
+  ev:      { label: 'Elektrikli', icon: '⚡',
              coef: { depY1: 20, depY2: 12, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3, kmStepPen: 3 },
              note: 'Elektrikli: teknolojik eskime ve batarya sağlığı eğriyi dikleştirir (lüks EV vakasında 1. yıl ~%30-35 ölçtük). En az kalibre profil — sonucu temkinli yorumla.' },
 };
@@ -1043,7 +1045,7 @@ function setSegment(key) {
   const seg = SEGMENTS[key];
   Object.entries(seg.coef).forEach(([id, v]) => { $(id).value = v; });
   $('segNote').textContent = seg.note;
-  $('segSuggest').classList.add('hidden'); // kullanıcı seçim yaptı — öneriyi sustur
+  ['segSuggest', 'ocrSegSuggest'].forEach(id => { if ($(id)) $(id).classList.add('hidden'); }); // kullanıcı seçti
   calc();
 }
 
@@ -1055,7 +1057,9 @@ const SEG_HINTS = [
   { seg: 'ticari', re: /\b(doblo|courier|caddy|transit|connect|berlingo|kangoo|dokker|partner|fiorino|combo|express\b|rifter|proace|vito|transporter|crafter|master\b|ducato|boxer|jumper|sprinter)\b/i },
 ];
 function suggestSegment(name) {
-  const el = $('segSuggest');
+  [ 'segSuggest', 'ocrSegSuggest' ].forEach(id => { if ($(id)) renderSegSuggest($(id), name); });
+}
+function renderSegSuggest(el, name) {
   const hit = name ? SEG_HINTS.find(h => h.re.test(name)) : null;
   if (hit && hit.seg !== activeSegment) {
     el.innerHTML = '💡 Bu araç için <b>' + SEGMENTS[hit.seg].label + '</b> profili önerilir — segmentler arası amortisman ve hasar algısı farklıdır. '
@@ -1762,12 +1766,19 @@ function showOcrConfirm() {
     + Object.values(p.flags).map(t => '<p class="ocr-lead" style="margin-top:8px;color:var(--yellow)">⚠️ ' + t + '</p>').join('')
     + '<p class="ocr-lead" style="margin-top:10px">🎯 <b>Tam analiz için tramer ve boyalı/değişen önemli.</b> İlanda yoksa ekspertiz/hasar bölümünün görüntüsünü de okutabilirsin; bilinmiyorsa boş bırak — dürüstçe "kısmi analiz" der, tramer için temkinli senaryo hesaplarız.</p>'
     + '<p class="ocr-lead" style="margin-top:6px">⚠️ <b>Sıfır muadil fiyatı ilanda yazmaz.</b> Onayladıktan sonra formdan hazır çapa seç ya da elle gir — çapa girilmeden eder hesaplanmaz.</p>'
+    + '<div class="ocr-seg"><label>🏷 Segment profili <span class="wf-note">— hesap bu profilin katsayılarıyla yapılır</span></label>'
+    + '<div class="seg-row">'
+    + Object.entries(SEGMENTS).map(([k, v]) =>
+        '<button type="button" class="seg-btn' + (k === activeSegment ? ' active' : '') + '" data-seg="' + k + '"'
+        + ' onclick="setSegment(\'' + k + '\')">' + v.icon + ' ' + v.label + '</button>').join('')
+    + '</div><p class="link-note hidden" id="ocrSegSuggest"></p></div>'
     + '<div style="display:flex;gap:10px;margin-top:12px">'
     + '<button class="btn" onclick="applyOcr()">✅ Onayla ve Değerle</button>'
     + '<button class="btn" style="background:var(--card2);color:var(--muted);border:1px solid var(--border)" onclick="$(\'ocrConfirm\').classList.add(\'hidden\')">Vazgeç</button>'
     + '</div>'
     + '<details><summary>Ham kaynak metinleri (şeffaflık)</summary><pre class="ocr-raw">'
     + p.raws.map(r => r.replace(/</g, '&lt;')).join('\n\n──────────\n\n') + '</pre></details>';
+  suggestSegment($('ocr_name').value); // profil önerisi karar anında görünsün
 }
 
 function applyOcr() {

@@ -85,25 +85,26 @@
   .demo-tag { display: inline-block; background: rgba(245,196,81,.15); color: var(--yellow); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
 
   /* Sonuç düzeni */
-  .result-grid { display: grid; grid-template-columns: 1.65fr 1fr; gap: 22px; align-items: start; margin-bottom: 20px; }
+  .result-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }
   .result-main { min-width: 0; }
 
   /* Araç başlık bandı */
   .vehicle-hero { margin-bottom: 18px; }
   .back-link { display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 14px; font-weight: 600; }
   .back-link:hover { color: var(--accent); }
-  .vh-body { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+  .vh-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px 18px; align-items: center;
     background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
   .vh-thumb { width: 120px; height: 80px; border-radius: 12px; overflow: hidden; background: var(--card2);
     border: 1px solid var(--border); display: grid; place-items: center; flex: none; }
   .vh-thumb svg { width: 100%; height: 100%; object-fit: cover; }
-  .vh-title { font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .vh-title { font-size: 20px; font-weight: 800; line-height: 1.25; }
   .vh-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
   .spec-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .spec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px;
     background: var(--card2); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
   .spec-chip .ic { font-size: 13px; opacity: .85; }
-  .vh-meta { text-align: right; }
+  .vh-meta { grid-column: 1 / -1; display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    border-top: 1px solid var(--border); padding-top: 10px; }
   .vh-id, .vh-date { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
   .res-title { font-size: 15px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
@@ -149,7 +150,8 @@
   .gap-band.down { background: rgba(77,163,255,.12); color: var(--accent); border: 1px solid rgba(77,163,255,.25); }
 
   /* Kalibrasyon ringi — GERÇEK sayaç, uydurma güven skoru değil */
-  .widget-ring { display: flex; gap: 12px; align-items: center; }
+  .widget-ring { display: flex; gap: 10px; align-items: center; }
+  .widget-ring .sub { margin-top: 0; }
   .conf-ring { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; flex: none;
     background: conic-gradient(var(--green) calc(var(--pct) * 1%), var(--card2) 0); }
   .conf-ring span { width: 44px; height: 44px; border-radius: 50%; background: var(--card); display: grid;
@@ -193,7 +195,7 @@
   }
 
   /* Alt widget satırı */
-  .widget-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
+  .widget-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; margin-top: 4px; }
   .widget { background: rgba(23,35,60,.02); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
   .widget-h { font-size: 11px; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
   .widget .val { font-size: 18px; font-weight: 800; color: var(--green); }
@@ -246,7 +248,9 @@
   input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  .wf-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+  .wf-item { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+  .wf-item > span:first-child { min-width: 0; flex: 1; }
+  .wf-item > span:last-child { white-space: nowrap; flex: none; text-align: right; }
   .wf-item:last-child { border-bottom: none; }
   .wf-item .neg { color: var(--red); } .wf-item .pos { color: var(--green); }
   .wf-item .total { color: var(--accent); font-weight: 700; font-size: 16px; }
@@ -324,9 +328,10 @@
   .sup-line { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
   .offer-band { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 14px 18px;
     background: rgba(62,207,142,.07); border: 1px solid rgba(62,207,142,.3); border-radius: 12px; flex-wrap: wrap; }
-  .offer-band b { font-size: 13px; color: var(--green); display: block; }
+  .offer-band b { font-size: 15px; color: var(--green); display: block; }
+  .offer-band b span { font-size: 19px; }
   .offer-band .ob-sub { font-size: 11px; color: var(--muted); }
-  .offer-band .ob-val { font-size: 20px; font-weight: 800; color: var(--green); margin-left: auto; }
+  .offer-band .rh-btn { margin-left: auto; }
   .hist-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border);
     font-size: 13px; flex-wrap: wrap; }
   .hist-row:last-child { border-bottom: none; }
@@ -637,25 +642,21 @@
           <p class="verdict-msg" id="verdictMsg"></p>
           <p class="qual-note hidden" id="qualNote"></p>
           <div class="widget-row">
-            <div class="widget"><div class="widget-h">🎯 Önerilen teklif</div><div class="val" id="offer">—</div>
-              <div class="sub">rayiç + %2 pazarlık payı</div></div>
+            <div class="widget widget-advice hidden" id="adviceWidget">
+              <div class="widget-h">💡 Uzman tavsiyesi</div><p id="adviceText"></p></div>
             <div class="widget"><div class="widget-h">🛡 Kalibrasyon Durumu</div>
               <div class="widget-ring">
                 <div class="conf-ring" id="calibRing"><span id="calibCount">—</span></div>
                 <div class="sub" id="calibText"></div>
               </div></div>
-            <div class="widget"><div class="widget-h">🤝 Beklenen anlaşma aralığı</div><div class="val" id="dealRange">—</div>
-              <div class="sub">rayice yakın gerçekçi kapanış bandı</div></div>
-            <div class="widget widget-advice hidden" id="adviceWidget">
-              <div class="widget-h">💡 Uzman tavsiyesi</div><p id="adviceText"></p></div>
             <div class="widget widget-soon"><div class="widget-h">📈 Piyasa trendi<span class="soon-lbl">YAKINDA</span></div>
               <div class="sub">Bu model için fiyat seyri, gerçek ilan ve satış verisi eşiği dolunca burada yayınlanacak.</div></div>
             <div class="widget widget-soon"><div class="widget-h">📊 Benzer ilanlar<span class="soon-lbl">YAKINDA</span></div>
               <div class="sub">Emsal ilan karşılaştırması, gerçek veri tabanı devreye girince eklenecek — uydurma emsal göstermeyiz.</div></div>
           </div>
           <div class="offer-band hidden" id="offerBand">
-            <div><b>💰 Önerilen Teklif</b><span class="ob-sub">pazarlık payı dahil makul aralık</span></div>
-            <div class="ob-val" id="obRange">—</div>
+            <div><b>💰 Önerilen teklif <span id="offer">—</span></b>
+              <span class="ob-sub">rayiç + %2 pazarlık payı · beklenen anlaşma aralığı: <span id="dealRange">—</span></span></div>
             <button class="rh-btn" onclick="copyOffer()" id="btnOffer">Teklifi Kopyala</button>
           </div>
         </div>
@@ -1075,7 +1076,7 @@ function renderSegSuggest(el, name) {
 }
 
 function copyOffer() {
-  const text = 'Ederi teklif önerisi: ' + $('obRange').textContent
+  const text = 'Ederi teklif önerisi: ' + $('offer').textContent + ' (anlaşma aralığı ' + $('dealRange').textContent + ')'
     + ' (ilan: ' + $('qrAsk').textContent + ', hesaplanan rayiç: ' + $('qrFair').textContent + ') — ederi.org';
   const done = () => { $('btnOffer').textContent = 'Kopyalandı ✓'; setTimeout(() => { $('btnOffer').textContent = 'Teklifi Kopyala'; }, 1800); };
   if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
@@ -1361,7 +1362,6 @@ function calc() {
     $('dealRange').textContent = gap > 2
       ? `${fmt(rr.fair*1.02)} – ${fmt(Math.min(rr.fair*1.08, askPrice))}`
       : fmt(askPrice);
-    $('obRange').textContent = $('dealRange').textContent;
     $('offerBand').classList.remove('hidden');
 
     let advText;
@@ -1920,7 +1920,7 @@ $('listingUrl').addEventListener('change', () => {
 const CALIB = { count: 22, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
-$('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanacak. Uydurma skor göstermeyiz.';
+$('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';
 
 ['carName','newPrice','modelYear','km','tramer','painted','replaced','askPrice',
  'depY1','depY2','depY6','normKm','kmSev','tramerSat','paintPen','replacePen',

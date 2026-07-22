@@ -559,11 +559,10 @@
       <h2 class="oc-title">Hemen analiz et</h2>
       <p class="oc-sub">İlan ekran görüntüsü yükle, metni ya da linki yapıştır — okuduklarımızı sen onaylarsın.</p>
       <div class="oc-tabs">
-        <button type="button" class="oc-tab active" data-pane="paneImg" onclick="ocTab('paneImg', this)">📷 Ekran Görüntüsü</button>
-        <button type="button" class="oc-tab" data-pane="paneText" onclick="ocTab('paneText', this)">📋 Metin</button>
-        <button type="button" class="oc-tab" data-pane="paneLink" onclick="ocTab('paneLink', this)">🔗 İlan Linki</button>
+        <button type="button" class="oc-tab active" data-pane="paneText" onclick="ocTab('paneText', this)">📋 Yapıştır (en hızlı)</button>
+        <button type="button" class="oc-tab" data-pane="paneImg" onclick="ocTab('paneImg', this)">📷 Ekran Görüntüsü</button>
       </div>
-      <div id="paneImg">
+      <div id="paneImg" class="hidden">
         <div class="dropzone" id="dropzone">
           <div class="dz-ic">📷</div>
           <p><b>İlanın ekran görüntülerini yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır;
@@ -573,7 +572,7 @@
         </div>
         <p class="sup-line">Her siteden görüntüyle çalışır: <b>arabam.com · sahibinden.com · letgo · facebook</b> — hepsi, çünkü görüntü senden gelir.</p>
       </div>
-      <div id="paneText" class="hidden">
+      <div id="paneText">
         <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
           <button class="btn" onclick="analyzeText()">Metni Çözümle</button>
@@ -582,14 +581,6 @@
         <p class="link-note" style="margin-top:6px">💡 En hızlı yol: ilan sayfasında <b>Tümünü Seç + Kopyala</b> (Ctrl/Cmd+A, C) yap, buradaki tek düğmeye bas.</p>
       </div>
       <input type="file" id="ocrFile" accept="image/*" multiple style="display:none">
-      <div id="paneLink" class="hidden">
-        <div class="link-bar" style="margin-top:4px">
-          <input type="text" id="listingUrl" placeholder="İlan linkini yapıştır — marka/model ve çapayı linkten buluruz">
-          <button onclick="mockAnalyze()">Analiz Et</button>
-        </div>
-        <p class="link-note" id="linkNote">İlan sayfasını çekmeyiz (bot koruması + site kuralları). Link yapıştırırsan marka/modeli ve çapayı
-        senin için doldururuz; bilgiler için ekran görüntüsünü ya da metni yapıştırman gerekir. Boşken buton örnek ilanla doldurur (demo).</p>
-      </div>
       <div class="ocr-status hidden" id="ocrStatus"></div>
       <div class="ocr-confirm hidden" id="ocrConfirm"></div>
     </div>
@@ -1128,7 +1119,8 @@ function newAnalysis(e) {
   ['fullResult', 'formArea', 'quickResult', 'historyPanel', 'ocrConfirm', 'ocrStatus'].forEach(id => $(id).classList.add('hidden'));
   $('confDetail').textContent = 'BETA';
   resetOcr(true); // bekleyen OCR kümesi + form alanları temizlenir
-  ['carName', 'newPrice', 'listingText', 'listingUrl'].forEach(id => { $(id).value = ''; });
+  ['carName', 'newPrice', 'listingText'].forEach(id => { $(id).value = ''; });
+  ocTab('paneText', document.querySelector('.oc-tab[data-pane="paneText"]'));
   ['modelYear', 'km', 'tramer', 'painted', 'replaced', 'askPrice'].forEach(id => { $(id).value = ''; });
   $('heavyDamage').value = 'unknown';
   ['roofDamage', 'chassisDamage', 'hoodReplaced'].forEach(id => { $(id).checked = false; });
@@ -1150,7 +1142,7 @@ async function pasteAndAnalyze() {
 
 // Analiz kartı sekmeleri (görüntü / metin / link)
 function ocTab(pane, btn) {
-  ['paneImg', 'paneText', 'paneLink'].forEach(p => $(p).classList.toggle('hidden', p !== pane));
+  ['paneImg', 'paneText'].forEach(p => $(p).classList.toggle('hidden', p !== pane));
   document.querySelectorAll('.oc-tab').forEach(b => b.classList.toggle('active', b === btn));
 }
 
@@ -1237,7 +1229,7 @@ async function makeThumb(source) {
 function renderHero(car) {
   const th = document.querySelector('.vh-thumb');
   if (lastThumb && th) th.innerHTML = '<img src="' + lastThumb + '" alt="İlan görüntüsü" style="width:100%;height:100%;object-fit:cover">';
-  const name = $('carName').value.trim() || carNameFromUrl($('listingUrl').value.trim());
+  const name = $('carName').value.trim();
   $('vhTitle').textContent = name || 'Analiz edilen araç';
   $('vhSub').textContent = name
     ? 'Kullanıcı beyanına göre analiz'
@@ -1466,35 +1458,6 @@ function calc() {
   $('qrName').textContent = heroName || 'Analiz edilen araç';
 }
 
-function mockAnalyze() {
-  const url = $('listingUrl').value.trim();
-  if (url) {
-    // Dürüst link akışı: sayfa ÇEKİLMEZ (bot koruması + ToS). Linkten marka/model çıkar,
-    // çapayı otomatik ara, kullanıcıyı görüntü/metin yapıştırmaya yönlendir.
-    const name = carNameFromUrl(url);
-    if (name && !$('carName').value.trim()) $('carName').value = name;
-    if (name) { autoAnchor(name); suggestSegment(name); }
-    const yil = yearFromUrl(url);
-    if (yil) $('modelYear').value = yil; // link = yeni analiz başlangıcı; varsayılan 2021'i de ezer
-    // Linkten alınabilecek her şey alındı → kullanıcıyı görüntü adımına taşı
-    ocTab('paneImg', document.querySelector('.oc-tab[data-pane="paneImg"]'));
-    const dz2 = $('dropzone');
-    dz2.classList.add('dragover');
-    setTimeout(() => dz2.classList.remove('dragover'), 2500);
-    $('linkNote').innerHTML = name
-      ? '✓ <b>' + name.replace(/</g, '&lt;') + '</b> linkten okundu, çapa arandı. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — şimdi <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, kalan bilgileri oradan alalım.'
-      : 'Linkten marka/model çıkaramadık. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, bilgileri oradan alalım.';
-    $('dropzone').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
-  $('newPrice').value = 1750000; $('modelYear').value = 2020; $('km').value = 145000;
-  $('tramer').value = 85000; $('painted').value = 3; $('replaced').value = 1;
-  $('askPrice').value = 1250000; $('heavyDamage').value = 'no';
-  calc();
-  showResults();
-  $('confDetail').textContent = 'BETA · örnek ilanla dolduruldu';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 // ---- GÖRÜNTÜDEN ANALİZ (tarayıcı-içi OCR + kullanıcı onay ekranı) ----
 // Şeffaflık sözleşmesi gereği OCR sonucu asla doğrudan hesaba girmez:
@@ -1881,8 +1844,23 @@ function analyzeText() {
   const t = $('listingText').value.trim();
   if (!t) { $('listingText').focus(); return; }
   $('ocrStatus').classList.add('hidden');
-  mergeOcr(ocrExtract(t), '📝 metin', t);
+  // Link sekmesi kalktı ama link yapıştıran afallamasın: metindeki ilan URL'sinden
+  // kimlik+yıl çıkar (sayfa yine ÇEKİLMEZ); metin sadece linkse kullanıcıyı yönlendir.
+  const um = t.match(/https?:\/\/\S+/);
+  if (um) {
+    const uf = {};
+    const n = carNameFromUrl(um[0]); if (n) uf.name = n;
+    const y = yearFromUrl(um[0]); if (y) uf.year = y;
+    if (Object.keys(uf).length) mergeOcr(uf, '🔗 link', um[0]);
+    if (n) { autoAnchor(n); suggestSegment(n); }
+  }
+  const rest = um ? t.replace(um[0], ' ').trim() : t;
+  if (rest.length >= 20) mergeOcr(ocrExtract(rest), '📝 metin', rest);
+  else if (!um) { $('listingText').focus(); return; }
   showOcrConfirm();
+  if (um && rest.length < 20)
+    $('ocrConfirm').insertAdjacentHTML('afterbegin',
+      '<p class="ocr-lead" style="color:var(--yellow)">🔗 Sadece link yapıştırdın — kimlik ve yılı linkten aldık, sayfayı çekmiyoruz (bot koruması + site kuralları). <b>İlan sayfasında Ctrl/Cmd+A, C yapıp metni de yapıştırırsan</b> km, fiyat ve tramer de dolar.</p>');
 }
 
 const dz = $('dropzone');
@@ -1969,9 +1947,6 @@ $('carName').addEventListener('change', () => {
   const n = $('carName').value.trim();
   autoAnchor(n);
   suggestSegment(n);
-});
-$('listingUrl').addEventListener('change', () => {
-  if (!$('carName').value.trim()) autoAnchor(carNameFromUrl($('listingUrl').value.trim()));
 });
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).

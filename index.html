@@ -35,8 +35,9 @@
   .tb-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
   .tb-icon { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card);
     color: var(--muted); font-size: 16px; cursor: default; display: grid; place-items: center; }
-  .btn-login { padding: 8px 18px; border-radius: 10px; border: none; background: var(--accent);
-    color: #fff; font-weight: 700; font-size: 13px; cursor: default; opacity: .8; font-family: inherit; }
+  .tb-new { padding: 8px 18px; border-radius: 10px; border: none; background: var(--accent);
+    color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .tb-new:hover { filter: brightness(1.1); }
 
   /* Tabs */
   .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 18px; }
@@ -506,7 +507,7 @@
       <a class="soon" title="Yakında">Fiyat Arşivi</a>
     </nav>
     <div class="tb-actions">
-      <button class="btn-login" title="Yakında — bireysel kullanım her zaman ücretsiz">Giriş Yap</button>
+      <button class="tb-new" onclick="newAnalysis(event)" title="Temiz sayfayla yeni analize başla">➕ Yeni Analiz</button>
     </div>
   </div>
 </div>

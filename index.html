@@ -575,7 +575,11 @@
       </div>
       <div id="paneText" class="hidden">
         <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
-        <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn" onclick="analyzeText()">Metni Çözümle</button>
+          <button class="btn" style="background:var(--card2);color:var(--accent);border:1px solid var(--accent)" onclick="pasteAndAnalyze()">📋 Panodan yapıştır ve çözümle</button>
+        </div>
+        <p class="link-note" style="margin-top:6px">💡 En hızlı yol: ilan sayfasında <b>Tümünü Seç + Kopyala</b> (Ctrl/Cmd+A, C) yap, buradaki tek düğmeye bas.</p>
       </div>
       <input type="file" id="ocrFile" accept="image/*" multiple style="display:none">
       <div id="paneLink" class="hidden">
@@ -1027,6 +1031,14 @@ $('newPrice').addEventListener('input', () => { anchorWasAuto = false; });
 
 // ---- DEĞERLEME MODU ----
 // İlan linkinden okunabilir araç adı çıkar (ör. "...bmw-5-serisi-525d-xdrive..." → "Bmw 5 Serisi 525d Xdrive")
+// Linkten model yılı: slug içinde 1990-2026 arası yıl ara (ilan no'ya karışmasın diye kelime sınırlı)
+function yearFromUrl(url) {
+  try {
+    const m = new URL(url).pathname.match(/[-\/](19[89]\d|20[0-2]\d)(?=[-\/]|$)/);
+    return m ? parseInt(m[1], 10) : null;
+  } catch { return null; }
+}
+
 function carNameFromUrl(url) {
   try {
     const skip = /^(ilan|galeriden|sahibinden|satilik|kiralik|otomobil|vasita|arac|detay|com|www|tr)$/;
@@ -1034,8 +1046,10 @@ function carNameFromUrl(url) {
       .map(s => s.split('-').filter(w => w && !skip.test(w) && !/^\d{5,}$/.test(w) && !/^(19|20)\d{2}$/.test(w)))
       .filter(w => w.length >= 2);
     if (!slugs.length) return '';
-    const best = slugs.reduce((a, b) => b.length > a.length ? b : a);
-    return best.slice(0, 6).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const best = slugs.reduce((a, b) => b.length > a.length ? b : a).slice(0, 6);
+    for (let i = best.length - 1; i > 0; i--)
+      if (best[i].toLowerCase() === best[i-1].toLowerCase()) best.splice(i, 1); // "audi audi" → "audi"
+    return best.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   } catch { return ''; }
 }
 
@@ -1122,6 +1136,16 @@ function newAnalysis(e) {
   setSegment('binek'); // profil de sıfırlanır — önceki analizden yapışıp kalmasın
   calc();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Panodan tek tıkla: ilan sayfasında Cmd/Ctrl+A,C → burada tek düğme (30 sn felsefesi)
+async function pasteAndAnalyze() {
+  try {
+    const t = await navigator.clipboard.readText();
+    if (!t || t.trim().length < 20) { $('listingText').focus(); return; }
+    $('listingText').value = t;
+    analyzeText();
+  } catch { $('listingText').focus(); } // izin verilmediyse elle yapıştırsın
 }
 
 // Analiz kartı sekmeleri (görüntü / metin / link)
@@ -1450,6 +1474,13 @@ function mockAnalyze() {
     const name = carNameFromUrl(url);
     if (name && !$('carName').value.trim()) $('carName').value = name;
     if (name) { autoAnchor(name); suggestSegment(name); }
+    const yil = yearFromUrl(url);
+    if (yil) $('modelYear').value = yil; // link = yeni analiz başlangıcı; varsayılan 2021'i de ezer
+    // Linkten alınabilecek her şey alındı → kullanıcıyı görüntü adımına taşı
+    ocTab('paneImg', document.querySelector('.oc-tab[data-pane="paneImg"]'));
+    const dz2 = $('dropzone');
+    dz2.classList.add('dragover');
+    setTimeout(() => dz2.classList.remove('dragover'), 2500);
     $('linkNote').innerHTML = name
       ? '✓ <b>' + name.replace(/</g, '&lt;') + '</b> linkten okundu, çapa arandı. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — şimdi <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, kalan bilgileri oradan alalım.'
       : 'Linkten marka/model çıkaramadık. İlan sayfasını çekmiyoruz (bot koruması + site kuralları) — <b>ilanın ekran görüntüsünü ya da metnini yapıştır</b>, bilgileri oradan alalım.';
@@ -1524,6 +1555,8 @@ function carNameFromText(text) {
     if (/^\d{1,3}$/.test(t) && /^(km|tl|₺)/i.test(next.replace(/^[^A-Za-z₺]+/, ''))) break;
     words.push(t);
   }
+  for (let i = words.length - 1; i > 0; i--)
+    if (words[i].toLowerCase() === words[i-1].toLowerCase()) words.splice(i, 1); // "Audi Audi" → "Audi"
   while (words.length > 1 && /^[a-zçğıöşü]{1,2}$/i.test(words[words.length - 1])) words.pop();
   return words.join(' ');
 }

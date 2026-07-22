@@ -866,8 +866,9 @@ const ANCHOR_DB = [
   { ad: 'Fiat Doblo Combi taban (Fiorino muadili — bir sınıf büyük, varsayım şişkin olabilir)', fiyat: 1394900, model: /fiorino|doblo/i },
   { ad: 'VW Caddy Impression/Life 2.0 TDI (ticari/kombi)', fiyat: 1820438, model: /caddy/i, trim: /impression|trendline|life/i },
   { ad: 'VW Caddy Style 2.0 TDI (ticari/kombi)', fiyat: 2194500, model: /caddy/i, trim: /style/i },
-  { ad: 'Dacia Sandero Essential TCe 100', fiyat: 1295000, model: /sandero(?!\s*stepway)/i, trim: /essential/i },
-  { ad: 'Dacia Sandero Expression TCe 100', fiyat: 1426000, model: /sandero(?!\s*stepway)/i, trim: /expression/i },
+  { ad: 'Dacia Sandero Stepway taban (Temmuz 2026)', fiyat: 1685000, model: /stepway/i },
+  { ad: 'Dacia Sandero Essential TCe 100', fiyat: 1295000, model: /sandero(?![\s\S]{0,20}stepway)/i, trim: /essential/i },
+  { ad: 'Dacia Sandero Expression TCe 100', fiyat: 1426000, model: /sandero(?![\s\S]{0,20}stepway)/i, trim: /expression/i },
   { ad: 'Kia Picanto Cool 1.0 AMT', fiyat: 1435000, model: /picanto/i },
   { ad: 'Hyundai i20 Jump Manuel', fiyat: 1487000, model: /\bi20\b/i, trim: /jump/i },
   { ad: 'Fiat Egea Sedan Dizel Easy Manuel', fiyat: 1499900, model: /egea(?!\s*-?cross)/i, trim: /easy/i },
@@ -1920,7 +1921,7 @@ $('listingUrl').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 31, target: 100 };
+const CALIB = { count: 32, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';

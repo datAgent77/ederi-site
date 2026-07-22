@@ -1918,7 +1918,7 @@ $('listingUrl').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 27, target: 100 };
+const CALIB = { count: 28, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';

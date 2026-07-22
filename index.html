@@ -566,8 +566,8 @@
       <div id="paneImg">
         <div class="dropzone" id="dropzone">
           <div class="dz-ic">📷</div>
-          <p><b>İlanın ekran görüntüsünü yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır.
-          Tramer/boya ilanda yoksa <b>ekspertiz görüntüsünü de</b> art arda yükleyebilirsin; alanlar birleştirilir.</p>
+          <p><b>İlanın ekran görüntülerini yükle — gerisini biz okuruz.</b><br>Sürükle, tıkla ya da panodan yapıştır;
+          <b>2-3 görüntüyü birden</b> seçebilirsin (ilan sayfası + boya-tramer haritası + ekspertiz) — alanlar otomatik birleştirilir.</p>
           <p class="dz-note">🔒 Görüntü cihazından çıkmaz — okuma tamamen tarayıcında yapılır (OCR).
           Okunanları sen onaylamadan hiçbir hesap yapılmaz.</p>
         </div>
@@ -577,7 +577,7 @@
         <textarea id="listingText" rows="4" placeholder="İlan sayfasındaki metni kopyala–yapıştır; yıl, km, fiyat, tramer ve boya/değişen bilgilerini metinden çıkarırız."></textarea>
         <button class="btn" style="margin-top:8px" onclick="analyzeText()">Metni Çözümle</button>
       </div>
-      <input type="file" id="ocrFile" accept="image/*" style="display:none">
+      <input type="file" id="ocrFile" accept="image/*" multiple style="display:none">
       <div id="paneLink" class="hidden">
         <div class="link-bar" style="margin-top:4px">
           <input type="text" id="listingUrl" placeholder="İlan linkini yapıştır — marka/model ve çapayı linkten buluruz">
@@ -1659,24 +1659,31 @@ async function upscaleForOcr(source) {
   } catch { return source; }
 }
 
-async function handleImage(source) {
+async function handleImage(source, seq) {
   const status = $('ocrStatus');
   status.classList.remove('hidden');
   $('ocrConfirm').classList.add('hidden');
-  status.textContent = 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
+  const tag = seq ? `Görüntü ${seq.i}/${seq.n} — ` : '';
+  status.textContent = tag + 'OCR motoru yükleniyor… (ilk kullanımda ~10 sn sürebilir)';
   try {
-    try { lastThumb = await makeThumb(source); } catch {}
+    if (!lastThumb) { try { lastThumb = await makeThumb(source); } catch {} } // önizleme = İLK görüntü (genelde ilan fotoğraflı sayfa)
     await loadTesseract();
     const pre = await upscaleForOcr(source);
     const { data } = await Tesseract.recognize(pre, 'tur', {
-      logger: m => { if (m.status === 'recognizing text') status.textContent = 'Görüntü okunuyor… %' + Math.round(m.progress * 100); }
+      logger: m => { if (m.status === 'recognizing text') status.textContent = tag + 'Görüntü okunuyor… %' + Math.round(m.progress * 100); }
     });
     status.classList.add('hidden');
     mergeOcr(ocrExtract(data.text), '📷 görüntü', data.text);
     showOcrConfirm();
   } catch (e) {
-    status.textContent = '⚠️ ' + e.message;
+    status.textContent = '⚠️ ' + tag + e.message;
   }
+}
+
+// 2-3 görüntüyü tek seferde: sırayla okunur, alanlar birleştirilir (ilan + boya haritası + ekspertiz)
+async function handleImages(files) {
+  const list = [...files].filter(f => f.type.startsWith('image/')).slice(0, 5); // makul üst sınır
+  for (let i = 0; i < list.length; i++) await handleImage(list[i], list.length > 1 ? { i: i + 1, n: list.length } : null);
 }
 
 const OCR_FIELDS = [
@@ -1831,13 +1838,12 @@ function analyzeText() {
 
 const dz = $('dropzone');
 dz.addEventListener('click', () => $('ocrFile').click());
-$('ocrFile').addEventListener('change', e => { if (e.target.files[0]) handleImage(e.target.files[0]); e.target.value = ''; });
+$('ocrFile').addEventListener('change', e => { if (e.target.files.length) handleImages(e.target.files); e.target.value = ''; });
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
 dz.addEventListener('drop', e => {
   e.preventDefault(); dz.classList.remove('dragover');
-  const f = e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f && f.type.startsWith('image/')) handleImage(f);
+  if (e.dataTransfer.files && e.dataTransfer.files.length) handleImages(e.dataTransfer.files);
 });
 document.addEventListener('paste', e => {
   if ($('modeVal').classList.contains('hidden')) return;

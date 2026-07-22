@@ -859,6 +859,7 @@ function gapClass(gap) {
 // model: isimden otomatik eşleştirme deseni; trim: donanım ayrıştırma; muadil: sıfırı satılmayan model
 const ANCHOR_DB = [
   { ad: 'Audi A3 Sportback 35 TFSI Advanced (premium)', fiyat: 3125000, model: /\ba3\b/i },
+  { ad: 'Audi A5 Sedan TDI (A4 muadili — A4 üretimde yok, varsayım)', fiyat: 6563808, model: /\ba[45]\b/i },
   { ad: 'Peugeot Rifter Allure 1.5 BlueHDi (ticari/camlı van)', fiyat: 1663594, model: /rifter|partner/i },
   { ad: 'Citroen Berlingo Plus Manuel 1.5 BlueHDi (ticari/camlı van)', fiyat: 1779000, model: /berlingo/i },
   { ad: 'Renault Kangoo Multix Equilibre (Dokker muadili — Dokker üretimde yok, varsayım)', fiyat: 1700000, model: /dokker|kangoo/i },
@@ -1917,7 +1918,7 @@ $('listingUrl').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 25, target: 100 };
+const CALIB = { count: 26, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';

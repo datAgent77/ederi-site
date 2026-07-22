@@ -870,6 +870,7 @@ const ANCHOR_DB = [
   { ad: 'Ford Fiesta (muadil: Hyundai i20 — Fiesta üretimde yok, varsayım)', fiyat: 1487000, model: /fiesta/i },
   { ad: 'Kia Rio (muadil: Hyundai i20 — Rio satışta yok, varsayım)', fiyat: 1487000, model: /\brio\b/i },
   { ad: 'Hyundai Accent (muadil: Egea Sedan — Accent satışta yok, varsayım)', fiyat: 1499900, model: /accent/i },
+  { ad: 'BYD Seal 390kW AWD Excellence (EV — resmi liste 21.07.2026)', fiyat: 4077000, model: /\bseal\b/i },
   { ad: 'Audi A3 Sportback 35 TFSI Advanced (premium)', fiyat: 3125000, model: /\ba3\b/i },
   { ad: 'Audi A5 Sedan TDI (A4 muadili — A4 üretimde yok, varsayım)', fiyat: 6563808, model: /\ba[45]\b/i },
   { ad: 'Peugeot Rifter Allure 1.5 BlueHDi (ticari/camlı van)', fiyat: 1663594, model: /rifter|partner/i },
@@ -1053,7 +1054,7 @@ const SEGMENTS = {
              note: 'Hafif ticari / filo (Courier, Doblo…): km normu 30.000/yıl, hasar toleransı yüksek. Henüz gerçek ilanla kalibre edilmedi — uzman varsayımı.' },
   ev:      { label: 'Elektrikli', icon: '⚡',
              coef: { depY1: 20, depY2: 12, depY6: 6, normKm: 15000, paintPen: 1.5, replacePen: 3, kmStepPen: 3 },
-             note: 'Elektrikli: TR piyasası kutuplu — bol/kampanyalı modellerde hızlı kayıp (1. yıl %30-35 ölçtük), kıt/ithal modellerde (ör. Tesla) kıtlık primi kaybı neredeyse sıfırlar. En az kalibre profil — sonucu mutlaka benzer ilanlarla karşılaştır.' },
+             note: 'Elektrikli: bol-arzlı ana akım EV\'de (BYD vakasıyla doğrulandı) bu eğri isabetli; kıt/ithal modellerde (Tesla) kıtlık primi kaybı siler — eder düşük çıkar, lüks-ÖTV\'lülerde gerçek kayıp daha da hızlı olabilir. Uç durumlarda sonucu benzer ilanlarla karşılaştır.' },
 };
 let activeSegment = 'binek';
 
@@ -1941,7 +1942,7 @@ $('listingUrl').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 32, target: 100 };
+const CALIB = { count: 33, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';

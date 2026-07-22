@@ -858,6 +858,18 @@ function gapClass(gap) {
 // ---- ÇAPA VERİTABANI (Temmuz 2026 marka liste fiyatları — ederi-hafiza ile senkron) ----
 // model: isimden otomatik eşleştirme deseni; trim: donanım ayrıştırma; muadil: sıfırı satılmayan model
 const ANCHOR_DB = [
+  { ad: 'BMW 320i Sedan Sport Line (premium)', fiyat: 5529000, model: /\b320[id]?\b|3 serisi/i },
+  { ad: 'Mercedes C 200 4MATIC AMG (premium; C 180 muadili)', fiyat: 6358000, model: /\bc\s?(180|200|220)d?\b|c serisi/i },
+  { ad: 'Skoda Fabia Premium 1.0 TSI DSG', fiyat: 1829900, model: /fabia/i },
+  { ad: 'Skoda Scala Elite 1.0 TSI DSG', fiyat: 1854900, model: /scala/i },
+  { ad: 'Skoda Kamiq Elite 1.0 TSI DSG', fiyat: 2024900, model: /kamiq/i },
+  { ad: 'Skoda Karoq Premium 1.5 TSI DSG', fiyat: 3149900, model: /karoq/i },
+  { ad: 'Honda CR-V e:HEV Advance', fiyat: 6160000, model: /cr-?v/i },
+  { ad: 'Peugeot 308 (muadil: Opel Astra — benzinli 308 satışta yok, varsayım)', fiyat: 2590000, model: /\b308\b/i },
+  { ad: 'Hyundai Elantra (muadil: Corolla Dream — Elantra satışta yok, varsayım)', fiyat: 2609000, model: /elantra/i },
+  { ad: 'Ford Fiesta (muadil: Hyundai i20 — Fiesta üretimde yok, varsayım)', fiyat: 1487000, model: /fiesta/i },
+  { ad: 'Kia Rio (muadil: Hyundai i20 — Rio satışta yok, varsayım)', fiyat: 1487000, model: /\brio\b/i },
+  { ad: 'Hyundai Accent (muadil: Egea Sedan — Accent satışta yok, varsayım)', fiyat: 1499900, model: /accent/i },
   { ad: 'Audi A3 Sportback 35 TFSI Advanced (premium)', fiyat: 3125000, model: /\ba3\b/i },
   { ad: 'Audi A5 Sedan TDI (A4 muadili — A4 üretimde yok, varsayım)', fiyat: 6563808, model: /\ba[45]\b/i },
   { ad: 'Peugeot Rifter Allure 1.5 BlueHDi (ticari/camlı van)', fiyat: 1663594, model: /rifter|partner/i },

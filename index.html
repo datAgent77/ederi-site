@@ -139,6 +139,8 @@
   .rh-t { font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
   .rh-s { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .rh-actions { margin-left: auto; display: flex; gap: 8px; }
+  .result-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;
+    padding-top: 14px; border-top: 1px solid var(--border); }
   .rh-btn { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--card2);
     color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .rh-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -190,7 +192,7 @@
     :root { --bg: #fff; --card: #fff; --card2: #f2f5f9; --text: #111; --muted: #555; --border: #ccc; }
     body { background: #fff; }
     .topbar, .hero, .assets, .tabs, .beta-note, .ocr-card, .grid, .site-footer, .side,
-    .back-link, .rh-actions, #modeBud { display: none !important; }
+    .back-link, .rh-actions, .result-actions, #modeBud { display: none !important; }
     .result-grid { grid-template-columns: 1fr; gap: 12px; }
     .side-summary { position: static; }
   }
@@ -613,10 +615,6 @@
         <div class="result-head hidden" id="resultHead">
           <div class="rh-ic">✓</div>
           <div><div class="rh-t">Analiz Detayı</div><div class="rh-s" id="rhTime">—</div></div>
-          <div class="rh-actions">
-            <button class="rh-btn" id="btnShare" onclick="shareResult()">🔗 Paylaş</button>
-            <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
-          </div>
         </div>
         <div class="vehicle-hero hidden" id="vehicleHero">
           <a class="back-link" href="#uygulama">← Yeni analiz</a>
@@ -654,6 +652,10 @@
             <div><b>💰 Önerilen teklif <span id="offer">—</span></b>
               <span class="ob-sub">rayiç + %2 pazarlık payı · beklenen anlaşma aralığı: <span id="dealRange">—</span></span></div>
             <button class="rh-btn" onclick="copyOffer()" id="btnOffer">Teklifi Kopyala</button>
+          </div>
+          <div class="result-actions">
+            <button class="rh-btn" id="btnShare" onclick="shareResult()">🔗 Paylaş</button>
+            <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
           </div>
         </div>
       </div>

@@ -77,10 +77,9 @@
   .link-bar button:focus-visible, .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
   .link-note { font-size: 11px; color: var(--muted); margin: 6px 2px 0; }
 
-  .decision {
-    border-radius: 16px; padding: 26px; text-align: left; margin-bottom: 20px;
-    border: 1px solid var(--border); background: var(--card);
-  }
+  .result-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(23,35,60,.05); overflow: hidden; margin-bottom: 20px; }
+  .decision { padding: 22px; text-align: left; }
   .decision .label { font-size: 12px; letter-spacing: .8px; color: var(--muted); text-transform: uppercase; }
   .decision .value { font-size: 30px; font-weight: 800; }
   .demo-tag { display: inline-block; background: rgba(245,196,81,.15); color: var(--yellow); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
@@ -90,11 +89,11 @@
   .result-main { min-width: 0; }
 
   /* Araç başlık bandı */
-  .vehicle-hero { margin-bottom: 18px; }
+  .vehicle-hero { margin-bottom: 0; }
   .back-link { display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 14px; font-weight: 600; }
   .back-link:hover { color: var(--accent); }
   .vh-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px 18px; align-items: center;
-    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
+    padding: 20px 22px; border-bottom: 1px solid var(--border); }
   .vh-thumb { width: 120px; height: 80px; border-radius: 12px; overflow: hidden; background: var(--card2);
     border: 1px solid var(--border); display: grid; place-items: center; flex: none; }
   .vh-thumb svg { width: 100%; height: 100%; object-fit: cover; }
@@ -486,7 +485,8 @@
     .tabs { gap: 8px; }
     .tab { flex: 1; padding: 13px 8px; font-size: 13px; }
     .card { padding: 16px 14px; }
-    .decision { padding: 20px 12px; }
+    .decision { padding: 18px 14px; }
+    .vh-body { padding: 16px 14px; }
     .cmp-box .v.ask, .cmp-box .v.fair { font-size: 22px; }
     .vh-title { font-size: 18px; }
     .compare { gap: 8px; }
@@ -623,6 +623,7 @@
           <div class="rh-ic">✓</div>
           <div><div class="rh-t">Analiz Detayı</div><div class="rh-s" id="rhTime">—</div></div>
         </div>
+        <div class="result-card" id="resultCard">
         <div class="vehicle-hero hidden" id="vehicleHero">
           <div class="vh-body">
             <div class="vh-thumb"><svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="120" height="80" fill="none"/><g stroke="#4da3ff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".85"><path d="M18 52 L24 38 Q26 33 32 33 L74 33 Q79 33 83 37 L93 46 Q102 48 104 52 L104 56 Q104 58 102 58 L96 58"/><path d="M18 52 Q15 52 15 55 L15 56 Q15 58 18 58 L26 58"/><line x1="44" y1="58" x2="78" y2="58"/><circle cx="35" cy="58" r="7"/><circle cx="87" cy="58" r="7"/><line x1="52" y1="33" x2="52" y2="45"/><path d="M28 45 L96 45"/></g></svg></div>
@@ -664,6 +665,7 @@
             <button class="rh-btn" onclick="window.print()">⬇ PDF İndir</button>
           </div>
         </div>
+        </div><!-- /result-card -->
       </div>
 
       <aside class="card side-summary">

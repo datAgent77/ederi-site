@@ -1509,12 +1509,14 @@ function carNameFromText(text) {
     // Baş/son sembolleri kırp; sembol ağırlıklı parçaları atla (OCR çöpü: «, &«&, ©, //)
     const t = w.replace(/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+|[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+$/g, '');
     if (!t) continue;
-    if (((t.match(/[0-9A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length) / t.length < 0.7) continue;
+    if (!/^\d+[.,]\d+$/.test(t) && ((t.match(/[0-9A-Za-zÇĞİÖŞÜçğıöşü]/g) || []).length) / t.length < 0.7) continue;
     // Tek harf artığı ("A « &«& ©" vakası) elenir — AMA ardından 2-3 haneli sayı gelen
     // tek harf sınıf adıdır, kalır: "Mercedes C 180", "BMW 3 20i" (GERÇEK Mercedes vakası)
     if (t.length === 1 && !/\d/.test(t)
         && !/^\d{2,3}$/.test((rest[rest.indexOf(w) + 1] || '').replace(/[^\d]/g, ''))) continue;
     // Atla: başlık süsleri — model adı değildir (HATASIZ-BOYASIZ, CAM TAVAN, ACİL…)
+    // Promosyon/ilan çöpünde başlık biter (ELDEN SENET 350.000 PEŞİNAT... gibi kampanya metni)
+    if (/^(elden|senet|pe[şs]inat|vade|kefilsiz|kampanya|f[ıi]rsat|kredi|takas|sahibinden|galeriden|opsiyonel|resm[iı]|noter)$/i.test(t)) break;
     if (/^(hatas[ıi]z(-boyas[ıi]z)?|boyas[ıi]z|tramersiz|de[ğg]i[şs]ensiz|temiz|acil|orj?[iı]?nal|full|cam|tavan|sunroof|emsalsiz|bak[ıi]ml[ıi])$/i.test(t)) continue;
     // Dur: yıl (2011), km/TL belirteci (tam kelime — "Comfotline" içindeki 'tl'ye takılma), uzun sayı, etiket kelimeleri
     if (/^(19|20)\d{2}$/.test(t) || /^(km|tl|₺)\.?,?$/i.test(t) || /[\d.](km|tl)$/i.test(t) || /^[\d.,]{4,}$/.test(t)
@@ -1957,7 +1959,7 @@ $('carName').addEventListener('change', () => {
 
 // Kalibrasyon sayacı — GERÇEK ilerleme (kalibrasyon defteri kayıt sayısı).
 // Uydurma güven skoru yerine dürüst sayaç; her kalibrasyon kaydında elle güncellenir.
-const CALIB = { count: 35, target: 100 };
+const CALIB = { count: 36, target: 100 };
 $('calibRing').style.setProperty('--pct', CALIB.count / CALIB.target * 100);
 $('calibCount').textContent = CALIB.count + '/' + CALIB.target;
 $('calibText').innerHTML = 'Güven skoru <b>' + CALIB.target + ' gerçek ilan</b> eşiğinde yayınlanır — uydurma skor yok.';
